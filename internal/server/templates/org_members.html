@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — {{.Org.Name}} members</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— {{.Org.Name}} · members</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+  <nav class="subnav">
+    <a href="/org/{{.Org.ID}}/members" class="active">Members</a>
+    <a href="/org/{{.Org.ID}}/tokens">Ingest tokens</a>
+  </nav>
+
+  <p class="note">Members of <b>{{.Org.Name}}</b> — you are
+    <span class="pill on">{{if .InstanceAdmin}}instance-admin{{else}}{{.Role}}{{end}}</span>.
+    Roles: <code>owner</code> &gt; <code>admin</code> &gt; <code>member</code> &gt;
+    <code>viewer</code>. You can only assign roles at or below your own, and can't
+    remove the last owner.</p>
+
+  {{if .Err}}<p class="warn">{{.Err}}</p>{{end}}
+
+  <div class="card">
+    <h2>Add or update a member</h2>
+    <form method="POST" action="/org/{{.Org.ID}}/members">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="add">
+      <div class="field">
+        <label for="login">User login (must already have an account)</label>
+        <input id="login" name="login" maxlength="64" placeholder="alice" required>
+      </div>
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role" name="role" required>
+          {{range .AssignableRoles}}<option value="{{.}}">{{.}}</option>{{end}}
+        </select>
+      </div>
+      <button type="submit" class="inline-btn">Add / update</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Current members</h2>
+    <table>
+      <thead><tr><th>User</th><th>Role</th><th>Change role</th><th></th></tr></thead>
+      <tbody>
+        {{range .Members}}
+        <tr>
+          <td>{{.Login}}{{if .Email}}<br><span class="muted">{{.Email}}</span>{{end}}</td>
+          <td><span class="pill on">{{.Role}}</span></td>
+          <td>
+            {{if .CanManage}}
+            <form method="POST" action="/org/{{$.Org.ID}}/members" class="inline">
+              <input type="hidden" name="_csrf" value="{{$.CSRF}}">
+              <input type="hidden" name="action" value="setrole">
+              <input type="hidden" name="user_id" value="{{.UserID}}">
+              <select name="role">{{range $.AssignableRoles}}<option value="{{.}}">{{.}}</option>{{end}}</select>
+              <button type="submit">Set</button>
+            </form>
+            {{else}}<span class="muted">—</span>{{end}}
+          </td>
+          <td>
+            {{if .CanManage}}
+            <form method="POST" action="/org/{{$.Org.ID}}/members" class="inline">
+              <input type="hidden" name="_csrf" value="{{$.CSRF}}">
+              <input type="hidden" name="action" value="revoke">
+              <input type="hidden" name="user_id" value="{{.UserID}}">
+              <button type="submit">Remove</button>
+            </form>
+            {{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  {{template "ghfooter"}}
+</body>
+</html>

@@ -1,0 +1,200 @@
+/* Egret Nest — single same-origin stylesheet (CSP style-src 'self'; no inline CSS,
+   no external fonts). Visual identity is drawn from the Egret mark: teal egress
+   line (#2DD4BF), deep-navy ground (#13293D), warm gold accent (#F5B54B). */
+
+/* ---- design tokens ---- */
+:root {
+  color-scheme: light dark;
+
+  --accent:        #0e9e8e;   /* teal, darkened for contrast on light */
+  --accent-weak:   #0e9e8e22;
+  --gold:          #b8860b;
+  --danger:        #c0392b;
+  --ok:            #2e8b57;
+
+  --bg:            #f6f8fa;
+  --surface:       #ffffff;
+  --surface-2:     #eef2f5;
+  --ink:           #13293d;   /* navy text */
+  --ink-soft:      #5b6b7a;
+  --line:          #d7e0e8;
+  --shadow:        0 1px 2px #13293d0f, 0 4px 16px #13293d0d;
+  --radius:        10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent:      #2dd4bf;
+    --accent-weak: #2dd4bf1f;
+    --gold:        #f5b54b;
+    --danger:      #ff6b6b;
+    --ok:          #5fd39a;
+
+    --bg:          #0b1b2b;
+    --surface:     #13293d;
+    --surface-2:   #17324a;
+    --ink:         #eef3f8;
+    --ink-soft:    #9fb2c2;
+    --line:        #ffffff1f;
+    --shadow:      0 1px 2px #0006, 0 6px 20px #0004;
+  }
+}
+/* viewer theme toggle wins over the media query, both directions */
+:root[data-theme="light"] {
+  --accent:#0e9e8e; --accent-weak:#0e9e8e22; --gold:#b8860b; --danger:#c0392b; --ok:#2e8b57;
+  --bg:#f6f8fa; --surface:#fff; --surface-2:#eef2f5; --ink:#13293d; --ink-soft:#5b6b7a;
+  --line:#d7e0e8; --shadow:0 1px 2px #13293d0f,0 4px 16px #13293d0d;
+}
+:root[data-theme="dark"] {
+  --accent:#2dd4bf; --accent-weak:#2dd4bf1f; --gold:#f5b54b; --danger:#ff6b6b; --ok:#5fd39a;
+  --bg:#0b1b2b; --surface:#13293d; --surface-2:#17324a; --ink:#eef3f8; --ink-soft:#9fb2c2;
+  --line:#ffffff1f; --shadow:0 1px 2px #0006,0 6px 20px #0004;
+}
+
+/* ---- base ---- */
+* { box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin: 0 auto;
+  max-width: 1000px;
+  padding: 1.6rem 1.2rem 3rem;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body.auth { max-width: 400px; padding-top: 3.5rem; }
+
+h1 { font-size: 1.45rem; letter-spacing: -.01em; margin: .2rem 0; text-wrap: balance; }
+h2 { font-size: 1.02rem; margin-top: 1.5rem; }
+body.auth h1 { font-size: 1.3rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: ui-monospace, "SF Mono", monospace; font-size: .88em;
+  background: var(--accent-weak); padding: .05rem .3rem; border-radius: 4px; }
+.muted, .note, .meta, .hint, .intro { color: var(--ink-soft); }
+.note, .hint, .intro { font-size: .86rem; }
+.meta { font-size: .9rem; margin: .3rem 0; }
+.empty { margin-top: 2rem; color: var(--ink-soft); }
+
+/* ---- header ---- */
+.head { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding-bottom: .4rem; }
+.head h1 { display: flex; align-items: center; gap: .5rem; }
+.inline { margin: 0; display: inline-flex; align-items: center; gap: .5rem; }
+button { cursor: pointer; font: inherit; }
+
+/* ---- nav ---- */
+nav { display: flex; flex-wrap: wrap; gap: .2rem .3rem; margin: .6rem 0 1.3rem;
+  border-bottom: 1px solid var(--line); }
+nav a { color: var(--ink-soft); padding: .45rem .7rem; border-radius: 6px 6px 0 0;
+  font-size: .9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+nav a:hover { color: var(--ink); background: var(--surface-2); text-decoration: none; }
+nav a.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+nav.subnav { border-bottom: none; margin: -.6rem 0 1.2rem; font-size: .84rem; }
+nav.subnav a { padding: .3rem .6rem; border-radius: 6px; }
+nav.subnav a.active { border: none; background: var(--accent-weak); }
+
+/* ---- tables ---- */
+table { border-collapse: collapse; width: 100%; margin-top: 1rem;
+  font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: .55rem .65rem; border-bottom: 1px solid var(--line);
+  font-size: .9rem; }
+th { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-soft);
+  font-weight: 600; }
+tbody tr { transition: background .12s; }
+tbody tr:hover { background: var(--accent-weak); }
+.table-wrap { overflow-x: auto; }
+
+/* ---- status colours ---- */
+.viol, .blocked { color: var(--danger); font-weight: 600; }
+.ok { color: var(--ok); }
+.new, .flagged { color: var(--gold); font-weight: 600; }
+
+/* ---- forms ---- */
+label { display: block; margin: .8rem 0 .25rem; font-size: .82rem; color: var(--ink-soft); }
+input, select {
+  width: 100%; padding: .5rem .6rem; font: inherit;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px;
+}
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+select { width: auto; min-width: 8rem; }
+.field { margin: .7rem 0; }
+.field label { margin: 0 0 .25rem; }
+.error { color: var(--danger); margin-top: 1rem; }
+
+/* buttons: default = subtle; .inline-btn = primary (teal) */
+button, .provider {
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; padding: .4rem .8rem;
+  transition: background .12s, border-color .12s;
+}
+button:hover { border-color: var(--accent); color: var(--accent); }
+.inline-btn {
+  margin-top: 1rem; padding: .5rem 1.1rem;
+  background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600;
+}
+.inline-btn:hover { color: #fff; filter: brightness(1.08); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---- auth / SSO ---- */
+.auth button { margin-top: 1.2rem; padding: .55rem 1rem; width: 100%; }
+.provider { display: block; text-align: center; margin-bottom: .5rem; width: 100%; }
+.provider:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.or { text-align: center; margin: .6rem 0; color: var(--ink-soft); font-size: .85rem; }
+
+/* ---- cards ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  margin: 1rem 0;
+  box-shadow: var(--shadow);
+}
+.card h2 { margin-top: .1rem; }
+.card form { margin: 0; }
+
+/* clickable org / summary cards laid out in a responsive grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.tile {
+  display: block; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 1rem 1.1rem; box-shadow: var(--shadow);
+  color: inherit; transition: transform .12s, border-color .12s, box-shadow .12s;
+}
+.tile:hover { transform: translateY(-2px); border-color: var(--accent); text-decoration: none;
+  box-shadow: 0 4px 20px #0e9e8e22; }
+.tile h3 { margin: 0 0 .3rem; font-size: 1.05rem; }
+.tile .links { margin-top: .7rem; font-size: .85rem; display: flex; gap: .8rem; }
+
+/* ---- secrets / snippets ---- */
+.secretbox {
+  font-family: ui-monospace, monospace; background: var(--surface-2);
+  border: 1px dashed var(--line); border-radius: 6px; padding: .7rem .8rem; margin: .5rem 0;
+  word-break: break-all;
+}
+pre.snippet {
+  font-family: ui-monospace, monospace; font-size: .82rem; background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 6px; padding: .7rem .8rem; overflow-x: auto;
+}
+.warn { color: var(--gold); font-weight: 600; }
+
+/* ---- pills ---- */
+.pill { display: inline-block; font-size: .72rem; font-weight: 600; padding: .12rem .55rem;
+  border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line); }
+.pill.on { color: var(--ok); background: #2e8b5718; border-color: #2e8b5740; }
+.pill.off { color: var(--ink-soft); }
+
+/* ---- footer ---- */
+.foot { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line);
+  color: var(--ink-soft); font-size: .85rem; }
+.foot a { color: inherit; display: inline-flex; align-items: center; gap: .35rem; }
+.foot a:hover { color: var(--accent); text-decoration: none; }
+.foot svg { vertical-align: middle; }
+
+.spark { vertical-align: middle; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .tile:hover { transform: none; }
+}

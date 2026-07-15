@@ -1,0 +1,29 @@
+# CODEOWNERS — auto-assign reviewers and enforce review on sensitive paths.
+# Combined with "Require review from Code Owners" in branch protection.
+
+# Everything has a default owner
+*                                   @NX1X
+
+# Security-critical: CI, supply chain, org policy
+/.github/                           @NX1X
+/.github/workflows/                 @NX1X
+/SECURITY.md                        @NX1X
+
+# Ingest boundary + auth — security gate
+/internal/server/                   @NX1X
+/docs/AUTH.md                       @NX1X
+
+# Data layer — SQL injection / IDOR / cross-tenant isolation
+/internal/store/                    @NX1X
+
+# Rendered output — XSS surface
+/internal/server/templates/         @NX1X
+
+# Runtime hardening
+/Dockerfile                         @NX1X
+
+# Dependency + build policy
+/go.mod                             @NX1X
+/go.sum                             @NX1X
+/docs/DEPENDENCIES.md               @NX1X
+/Makefile                           @NX1X

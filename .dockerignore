@@ -1,0 +1,14 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+*.db
+*.pem
+*.key
+deploy/nginx/certs
+docs
+*_test.go
+coverage.out
+coverage.html
+bin

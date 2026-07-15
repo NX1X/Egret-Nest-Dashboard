@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — settings</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— settings</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+
+  <div class="card">
+    <h2>Instance</h2>
+    <form method="POST" action="/admin/settings">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="save">
+      <div class="field">
+        <label for="instance_name">Display name</label>
+        <input id="instance_name" name="instance_name" value="{{.InstanceName}}" maxlength="100">
+      </div>
+      <div class="field">
+        <label for="retention_days">Run retention (days, 0 = keep forever)</label>
+        <input id="retention_days" name="retention_days" inputmode="numeric" pattern="[0-9]*" value="{{.RetentionDays}}">
+      </div>
+      <div class="field">
+        <label for="audit_retention_days">Audit-log retention (days, 0 = keep forever)</label>
+        <input id="audit_retention_days" name="audit_retention_days" inputmode="numeric" pattern="[0-9]*" value="{{.AuditRetentionDays}}">
+      </div>
+      <button type="submit" class="inline-btn">Save</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Metrics endpoint
+      {{if .MetricsEnabled}}<span class="pill on">enabled</span>{{else}}<span class="pill off">disabled</span>{{end}}
+    </h2>
+    <p class="note"><code>GET /metrics</code> serves Prometheus-format counters. It is disabled
+      until a token exists, then requires that token as a <code>Bearer</code> credential.</p>
+    {{if .NewMetricsToken}}
+    <p class="warn">Copy this token now — it is shown only once:</p>
+    <div class="secretbox">{{.NewMetricsToken}}</div>
+    <pre class="snippet">curl -H "Authorization: Bearer {{.NewMetricsToken}}" &lt;dashboard&gt;/metrics</pre>
+    {{end}}
+    {{if .MetricsEnvSet}}
+    <p class="warn">A token is also set via the <code>EGRET_NEST_METRICS_TOKEN</code>
+      environment variable. Generating one here overrides it; <b>Disable</b> only
+      removes the token set here — to fully turn <code>/metrics</code> off you must
+      unset that environment variable and restart.</p>
+    {{end}}
+    <form method="POST" action="/admin/settings">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="metrics_generate">
+      <button type="submit" class="inline-btn">{{if .MetricsEnabled}}Rotate token{{else}}Generate token{{end}}</button>
+    </form>
+    {{if .MetricsEnabled}}
+    <form method="POST" action="/admin/settings">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="metrics_clear">
+      <button type="submit" class="inline-btn">Disable</button>
+    </form>
+    {{end}}
+  </div>
+
+  <div class="card">
+    <h2>Authentication methods</h2>
+    <p class="note">Manage login providers on the <a href="/admin/auth">Authentication</a>
+      page — configure GitHub/OIDC in the UI (client secrets encrypted at rest) or via
+      environment variables (which take precedence). Below is a read-only summary.</p>
+    <table>
+      <thead><tr><th>Method</th><th>Status</th><th>Enable / configure</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Local accounts</b> + TOTP 2FA</td>
+          <td><span class="pill on">always on</span></td>
+          <td class="muted">Username + password; users self-enrol 2FA on <a href="/account">Account</a>.
+            Set <code>EGRET_NEST_SECRET_KEY</code> to encrypt TOTP seeds at rest.</td>
+        </tr>
+        <tr>
+          <td><b>GitHub OAuth</b></td>
+          <td>{{if .AuthGitHub}}<span class="pill on">enabled</span>{{else}}<span class="pill off">off</span>{{end}}</td>
+          <td class="muted">
+            {{if .AuthGitHub}}Login with GitHub is active{{if .AuthGitHubOrg}} · restricted to org <code>{{.AuthGitHubOrg}}</code>{{end}}.
+            {{else}}Set <code>EGRET_NEST_GITHUB_CLIENT_ID</code> + <code>_CLIENT_SECRET</code>
+              (optional <code>_ALLOWED_ORG</code>).{{end}}
+          </td>
+        </tr>
+        <tr>
+          <td><b>OIDC</b> (Okta, Entra, Google, Keycloak…)</td>
+          <td>{{if .AuthOIDC}}<span class="pill on">enabled</span>{{else}}<span class="pill off">off</span>{{end}}</td>
+          <td class="muted">
+            {{if .AuthOIDC}}"{{.AuthOIDCName}}" login is active{{if .AuthOIDCDomain}} · restricted to <code>@{{.AuthOIDCDomain}}</code>{{end}}.
+            {{else}}Set <code>EGRET_NEST_OIDC_ISSUER</code> + <code>_CLIENT_ID</code> +
+              <code>_CLIENT_SECRET</code> (optional <code>_ALLOWED_DOMAIN</code>).{{end}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">SSO logins authenticate identity only — a new SSO user gets
+      <b>no access</b> until an admin grants an org on <a href="/admin/users">Users</a>
+      (fail-closed). See <code>docs/AUTH.md</code>.</p>
+  </div>
+
+  {{template "ghfooter"}}
+</body>
+</html>

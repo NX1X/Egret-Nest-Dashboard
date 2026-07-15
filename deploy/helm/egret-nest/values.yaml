@@ -1,0 +1,98 @@
+# Egret Nest Dashboard — Helm values.
+
+image:
+  repository: ghcr.io/nx1x/egret-nest
+  tag: ""              # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+
+# IMPORTANT: the store is embedded SQLite (single writer), so this MUST stay 1.
+# The Deployment uses the Recreate strategy for the same reason.
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  # Defaults target ingress-nginx: match the app's 8 MiB ingest limit and add a
+  # per-client rate limit (adjust for your controller). cert-manager, etc. go here.
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "8m"
+    nginx.ingress.kubernetes.io/limit-rps: "30"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  host: egret.example.com
+  tls:
+    enabled: true
+    secretName: egret-nest-tls
+
+persistence:
+  enabled: true
+  size: 1Gi
+  # "" = cluster default. Use BLOCK storage (EBS/PD/local-path) — NOT NFS/CephFS:
+  # SQLite is a single writer and file locking over NFS is unreliable.
+  storageClass: ""
+  accessMode: ReadWriteOnce
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: "1"
+    memory: 256Mi
+
+# Non-secret configuration (rendered as plain env).
+config:
+  instance: "Egret Nest"
+  behindProxy: true           # behind the ingress/TLS terminator
+  baseURL: "https://egret.example.com"
+  retentionDays: 0
+  auditRetentionDays: 0
+  githubAllowedOrg: ""
+  oidcIssuer: ""
+  oidcClientID: ""
+  oidcAllowedDomain: ""
+
+# Secret configuration. Either set these (a Secret is created) or point
+# existingSecret at a Secret you manage (with the same EGRET_NEST_* keys).
+existingSecret: ""
+secrets:
+  secretKey: ""             # EGRET_NEST_SECRET_KEY (32-byte hex/base64) — TOTP at-rest
+  webhookSecret: ""         # EGRET_NEST_WEBHOOK_SECRET
+  metricsToken: ""          # EGRET_NEST_METRICS_TOKEN (>= 32 chars)
+  githubClientSecret: ""    # EGRET_NEST_GITHUB_CLIENT_SECRET
+  githubClientID: ""        # EGRET_NEST_GITHUB_CLIENT_ID
+  oidcClientSecret: ""      # EGRET_NEST_OIDC_CLIENT_SECRET
+
+# Pod/container hardening (overridable, secure by default).
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532          # distroless nonroot
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# Default-deny NetworkPolicy (opt-in — needs a CNI that enforces them). When
+# enabled, only HTTP ingress + DNS/HTTPS egress are allowed; narrow further with
+# ingressFrom / egressTo peer selectors.
+networkPolicy:
+  enabled: false
+  ingressFrom: []
+    # - namespaceSelector:
+    #     matchLabels: { kubernetes.io/metadata.name: ingress-nginx }
+  egressTo: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — logs</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— request logs</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+
+  <p class="note">The most recent HTTP requests this server handled (in-memory,
+    newest first — cleared on restart). This is the live access log of activity on
+    the dashboard.</p>
+  {{if .Entries}}
+  <table>
+    <thead><tr><th>Time</th><th>Method</th><th>Path</th><th>Status</th><th>ms</th><th>IP</th><th>User</th></tr></thead>
+    <tbody>
+      {{range .Entries}}
+      <tr>
+        <td class="muted">{{ftime .Time}}</td>
+        <td>{{.Method}}</td>
+        <td><code>{{.Path}}</code></td>
+        <td>{{if ge .Status 500}}<span class="viol">{{.Status}}</span>{{else if ge .Status 400}}<span class="new">{{.Status}}</span>{{else}}<span class="ok">{{.Status}}</span>{{end}}</td>
+        <td class="muted">{{.DurMS}}</td>
+        <td class="muted">{{.IP}}</td>
+        <td>{{if .User}}{{.User}}{{else}}<span class="muted">—</span>{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="empty">No requests recorded yet.</p>
+  {{end}}
+
+  {{template "ghfooter"}}
+</body>
+</html>

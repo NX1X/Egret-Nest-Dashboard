@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — repositories</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— repositories</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+
+  {{if .Repos}}
+  <table>
+    <thead><tr><th>Repository</th><th>Runs</th><th>Violations</th><th>Last activity</th></tr></thead>
+    <tbody>
+      {{range .Repos}}
+      <tr>
+        <td>{{if .Repository}}<a href="/repos/{{.Repository}}">{{.Repository}}</a>{{else}}<span class="muted">(unassigned)</span>{{end}}</td>
+        <td>{{.Runs}}</td>
+        <td>{{if .NumViolations}}<span class="viol">{{.NumViolations}}</span>{{else}}<span class="ok">0</span>{{end}}</td>
+        <td class="muted">{{ftime .LastSeen}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="empty">No repositories yet — ingest a run to get started.</p>
+  {{end}}
+  {{template "ghfooter"}}
+</body>
+</html>

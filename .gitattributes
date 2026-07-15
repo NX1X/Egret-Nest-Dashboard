@@ -1,0 +1,11 @@
+# Normalise line endings: the repo stores LF (keeps gofmt/CI happy on any OS).
+* text=auto eol=lf
+
+*.go    text eol=lf
+*.html  text eol=lf
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.md    text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf

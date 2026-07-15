@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — users</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— users &amp; access</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+
+  <p class="note">SSO users (GitHub/OIDC) are provisioned with <b>no access</b> —
+    grant them a specific organization here. A user sees only the runs/repos in
+    organizations they belong to.</p>
+
+  <table>
+    <thead><tr><th>User</th><th>Source</th><th>Access (org · role)</th><th>Grant access</th></tr></thead>
+    <tbody>
+      {{range .Users}}
+      {{$uid := .ID}}
+      <tr>
+        <td>{{.Login}}{{if .IsAdmin}} <span class="pill on">instance-admin</span>{{end}}
+          {{if .Email}}<br><span class="muted">{{.Email}}</span>{{end}}</td>
+        <td><span class="muted">{{.Source}}</span></td>
+        <td>
+          {{if .Membership}}
+            {{range .Membership}}
+            <form method="POST" action="/admin/users" class="inline">
+              <input type="hidden" name="_csrf" value="{{$.CSRF}}">
+              <input type="hidden" name="action" value="revoke">
+              <input type="hidden" name="user_id" value="{{$uid}}">
+              <input type="hidden" name="org_id" value="{{.OrgID}}">
+              <code>{{.OrgName}}</code> · {{.Role}}
+              <button type="submit">revoke</button>
+            </form>
+            {{end}}
+          {{else}}<span class="muted">— no access —</span>{{end}}
+        </td>
+        <td>
+          {{if $.Orgs}}
+          <form method="POST" action="/admin/users" class="inline">
+            <input type="hidden" name="_csrf" value="{{$.CSRF}}">
+            <input type="hidden" name="action" value="grant">
+            <input type="hidden" name="user_id" value="{{$uid}}">
+            <select name="org_id">{{range $.Orgs}}<option value="{{.ID}}">{{.Name}}</option>{{end}}</select>
+            <select name="role">{{range $.Roles}}<option value="{{.}}">{{.}}</option>{{end}}</select>
+            <button type="submit">grant</button>
+          </form>
+          {{else}}<span class="muted">create an org first</span>{{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+  {{template "ghfooter"}}
+</body>
+</html>

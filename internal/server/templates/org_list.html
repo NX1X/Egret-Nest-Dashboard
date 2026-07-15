@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — organizations</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— organizations</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+
+  <p class="note">Organizations you can manage. An org owner or admin manages that
+    org's members and ingest tokens here — no instance-admin access required.</p>
+
+  {{if .Orgs}}
+  <div class="grid">
+    {{range .Orgs}}
+    <a class="tile" href="/org/{{.ID}}/members">
+      <h3>🏢 {{.Name}}</h3>
+      <span class="pill on">{{.Role}}</span>
+      <div class="links">
+        <span>Members →</span>
+        <span>Ingest tokens →</span>
+      </div>
+    </a>
+    {{end}}
+  </div>
+  <p class="note">Tip: open an organization to switch between its <b>Members</b> and
+    <b>Ingest tokens</b> tabs.</p>
+  {{else}}
+  <p class="muted">You don't manage any organizations. Ask an instance admin to make
+    you an <code>owner</code> or <code>admin</code> of one on the Users page.</p>
+  {{end}}
+
+  {{template "ghfooter"}}
+</body>
+</html>

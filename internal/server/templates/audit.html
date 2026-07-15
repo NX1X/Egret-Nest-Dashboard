@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — audit log</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— audit log</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+  <p class="note">Most recent 300 security events (newest first). Append-only.</p>
+  {{if .Events}}
+  <table>
+    <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th><th>IP</th></tr></thead>
+    <tbody>
+      {{range .Events}}
+      <tr>
+        <td class="muted">{{ftime .At}}</td>
+        <td>{{if .ActorLogin}}{{.ActorLogin}}{{else}}<span class="muted">—</span>{{end}}</td>
+        <td><code>{{.Action}}</code></td>
+        <td class="muted">{{if .Detail}}{{.Detail}}{{else}}—{{end}}</td>
+        <td class="muted">{{.IP}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="empty">No audit events recorded yet.</p>
+  {{end}}
+  {{template "ghfooter"}}
+</body>
+</html>

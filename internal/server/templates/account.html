@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — account</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— account</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+
+  {{if .Err}}<p class="warn">{{.Err}}</p>{{end}}
+  {{if .Msg}}<p class="note">{{.Msg}}</p>{{end}}
+
+  <div class="card">
+    <h2>Two-factor authentication (TOTP)</h2>
+
+    {{if not .IsLocal}}
+    <p class="muted">Your account signs in through an identity provider
+      (GitHub/OIDC). Two-factor authentication is managed there, not here.</p>
+
+    {{else if .TOTPEnabled}}
+    <p>Status: <span class="pill on">enabled</span>. You'll be asked for a 6-digit
+      code from your authenticator each time you sign in.</p>
+    <form method="POST" action="/account">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="disable">
+      <div class="field">
+        <label for="code">Enter a current code to turn 2FA off</label>
+        <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               pattern="[0-9]*" maxlength="6" placeholder="123456" required>
+      </div>
+      <button type="submit" class="inline-btn">Disable 2FA</button>
+    </form>
+
+    {{else if .Pending}}
+    <p>Status: <span class="pill off">not yet enabled</span>. Add this secret to your
+      authenticator app, then enter a code to confirm.</p>
+    <p class="note">Secret (manual entry):</p>
+    <div class="secretbox">{{.Secret}}</div>
+    <p class="note">Or use this <code>otpauth://</code> URI (paste into an app that
+      accepts one, or turn it into a QR with your own tooling):</p>
+    <div class="secretbox">{{.OtpauthURI}}</div>
+    <form method="POST" action="/account">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="confirm">
+      <div class="field">
+        <label for="code">6-digit code from your app</label>
+        <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+               pattern="[0-9]*" maxlength="6" placeholder="123456" required>
+      </div>
+      <button type="submit" class="inline-btn">Confirm &amp; enable</button>
+    </form>
+    <form method="POST" action="/account" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="begin">
+      <button type="submit">Generate a new secret</button>
+    </form>
+
+    {{else}}
+    <p>Status: <span class="pill off">off</span>. Protect your account with a
+      time-based one-time code in addition to your password.</p>
+    <form method="POST" action="/account">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="begin">
+      <button type="submit" class="inline-btn">Enable 2FA</button>
+    </form>
+    {{end}}
+  </div>
+
+  {{template "ghfooter"}}
+</body>
+</html>

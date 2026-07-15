@@ -1,0 +1,179 @@
+# Release: on a version tag, build the static binary + SHA256SUMS and publish a
+# GitHub Release, and build + push the container image to GHCR pinned by digest.
+# Both artifacts carry SLSA build provenance (keyless, OIDC). Operators self-host,
+# so a release is "here's a new version to deploy," not a hosted rollout.
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  # Manual re-run of an EXISTING tag's release (e.g. a prior run failed partway).
+  # Supply the already-pushed tag; the jobs check it out and (re)publish. It does
+  # NOT create tags - the tag must already exist (the release step --verify-tag's it).
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing version tag to (re)release, e.g. v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Serialize per-tag so a double/re-push (or a manual re-run) can't race two publishes.
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  binary:
+    name: Binary + GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # `release` is a protected GitHub Environment: configure required reviewers +
+    # (optionally) a wait timer in repo Settings → Environments so a tag push
+    # can't publish unattended. Referencing a not-yet-created environment is
+    # harmless (GitHub creates it unprotected until you add rules).
+    environment: release
+    permissions:
+      contents: write      # create the GitHub Release + upload assets
+      id-token: write      # OIDC for keyless SLSA provenance
+      attestations: write  # store the build provenance attestation
+    # Resolve the tag once: on a tag push it's the pushed tag; on a manual dispatch
+    # it's the typed input (github.ref_name would be the branch, not a tag).
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      # Don't persist the ambient GITHUB_TOKEN into .git/config: the release step
+      # uses its own GH_TOKEN, and the build runs third-party module code that must
+      # not see push credentials.
+      - name: Validate release tag format
+        run: |
+          # Reject anything that isn't vMAJOR.MINOR.PATCH before we check out that
+          # ref or spend build minutes — guards a mistyped manual-dispatch input
+          # (e.g. a branch name) from reaching checkout/build/publish.
+          [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "::error::TAG '${TAG}' is not a vMAJOR.MINOR.PATCH release tag."; exit 1; }
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
+        with:
+          # Pin the patched toolchain (GO-2026-5856, crypto/tls ECH leak, fixed in
+          # 1.25.12) so the release binary + image ship reproducibly + vuln-free.
+          go-version: "1.25.12"
+          # No build cache on the release/trust path: a cache entry populated by a
+          # lower-privileged workflow (PR) must not be restorable here (cache poisoning).
+          cache: false
+
+      - name: Verify module checksums
+        run: go mod verify
+
+      - name: Build static binary (CGO off, pure-Go SQLite)
+        env:
+          VERSION: ${{ env.TAG }}
+        run: make build VERSION="${VERSION}"
+
+      - name: Package assets (egret-nest_linux_amd64 + SHA256SUMS)
+        run: |
+          cp bin/egret-nest egret-nest_linux_amd64
+          sha256sum egret-nest_linux_amd64 > SHA256SUMS
+          echo "--- SHA256SUMS ---"; cat SHA256SUMS
+
+      # SLSA build provenance (keyless, OIDC):
+      #   gh attestation verify egret-nest_linux_amd64 --repo NX1X/Egret-Nest-Dashboard
+      - name: Attest build provenance (binary)
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: "egret-nest_linux_amd64, SHA256SUMS"
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Idempotent so a manual re-run of an existing tag republishes cleanly:
+          # if the Release already exists, re-upload assets (--clobber); else create it.
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists — re-uploading assets (--clobber)."
+            gh release upload "${TAG}" egret-nest_linux_amd64 SHA256SUMS --clobber
+          else
+            gh release create "${TAG}" \
+              egret-nest_linux_amd64 SHA256SUMS \
+              --title "${TAG}" \
+              --generate-notes \
+              --verify-tag
+          fi
+
+  image:
+    name: Container image (GHCR, digest-pinned)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: read
+      packages: write      # push to GHCR
+      id-token: write      # OIDC for keyless SLSA provenance
+      attestations: write  # store the image provenance attestation
+    # Resolve the tag once: on a tag push it's the pushed tag; on a manual dispatch
+    # it's the typed input (github.ref_name would be the branch, not a tag).
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Validate release tag format
+        run: |
+          # Reject anything that isn't vMAJOR.MINOR.PATCH before we check out that
+          # ref or spend build minutes — guards a mistyped manual-dispatch input
+          # (e.g. a branch name) from reaching checkout/build/publish.
+          [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "::error::TAG '${TAG}' is not a vMAJOR.MINOR.PATCH release tag."; exit 1; }
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+
+      - name: Log in to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+        run: echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${ACTOR}" --password-stdin
+
+      - name: Build and push image (from digest-pinned bases)
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}   # for `gh release list` (needs contents:read)
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          # GHCR requires a lowercase repository path.
+          IMG=$(echo "ghcr.io/${OWNER}/egret-nest" | tr '[:upper:]' '[:lower:]')
+          docker build --build-arg VERSION="${TAG}" -t "${IMG}:${TAG}" .
+          docker push "${IMG}:${TAG}"
+          # Move the floating :latest tag ONLY when this tag is the highest published
+          # release. Without this, a manual workflow_dispatch re-run of an OLDER tag
+          # would silently regress :latest to a stale (possibly vulnerable) image.
+          HIGHEST=$(gh release list --exclude-drafts --exclude-pre-releases \
+            --json tagName --jq '.[].tagName' | sort -V | tail -1)
+          if [ -z "${HIGHEST}" ] || [ "$(printf '%s\n%s\n' "${HIGHEST}" "${TAG}" | sort -V | tail -1)" = "${TAG}" ]; then
+            docker tag "${IMG}:${TAG}" "${IMG}:latest"
+            docker push "${IMG}:latest"
+            echo "Moved :latest to ${TAG} (highest published release)."
+          else
+            echo "::notice::${TAG} is older than ${HIGHEST}; leaving :latest unchanged."
+          fi
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMG}:${TAG}" | cut -d@ -f2)
+          echo "image=${IMG}" >> "${GITHUB_OUTPUT}"
+          echo "digest=${DIGEST}" >> "${GITHUB_OUTPUT}"
+          echo "Pushed ${IMG}:${TAG} @ ${DIGEST}"
+
+      # SLSA build provenance for the image (verify with:
+      #   gh attestation verify oci://ghcr.io/nx1x/egret-nest@<digest> --repo NX1X/Egret-Nest-Dashboard)
+      - name: Attest build provenance (image)
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-name: ${{ steps.build.outputs.image }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true

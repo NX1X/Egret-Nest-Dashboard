@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — {{.Org.Name}} ingest tokens</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="head">
+    <h1>🪶 {{.Instance}} <span class="muted">— {{.Org.Name}} · ingest tokens</span></h1>
+    {{if .User}}
+    <form method="POST" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <span class="muted">{{.User.Login}}</span>
+      <button type="submit">Sign out</button>
+    </form>
+    {{end}}
+  </div>
+  {{template "topnav" .}}
+  <nav class="subnav">
+    <a href="/org/{{.Org.ID}}/members">Members</a>
+    <a href="/org/{{.Org.ID}}/tokens" class="active">Ingest tokens</a>
+  </nav>
+
+  <p class="note">Scoped ingest tokens for <b>{{.Org.Name}}</b> — you are
+    <span class="pill on">{{if .InstanceAdmin}}instance-admin{{else}}{{.Role}}{{end}}</span>.
+    A repository POSTs its Egret runs here with one of these bearer tokens.</p>
+
+  {{if .NewToken}}
+  <div class="card">
+    <h2>New ingest token <span class="warn">— shown once</span></h2>
+    <div class="secretbox">{{.NewToken}}</div>
+    <pre class="snippet">export EGRET_INGEST_URL="{{.IngestURL}}"
+export EGRET_INGEST_TOKEN="{{.NewToken}}"{{if .SnippetRepo}}
+# This token is locked to repository: {{.SnippetRepo}}{{end}}</pre>
+    {{if .IngestURLDerived}}
+    <p class="warn">This URL was derived from the request host. For production, set
+      <code>EGRET_NEST_BASE_URL</code> to your dashboard's trusted URL.</p>
+    {{end}}
+  </div>
+  {{end}}
+
+  <div class="card">
+    <h2>Generate an ingest token</h2>
+    <form method="POST" action="/org/{{.Org.ID}}/tokens">
+      <input type="hidden" name="_csrf" value="{{.CSRF}}">
+      <input type="hidden" name="action" value="create_token">
+      <div class="field">
+        <label for="repository">Repository (optional — <code>owner/name</code>, blank = any repo in the org)</label>
+        <input id="repository" name="repository" maxlength="140" placeholder="acme/build">
+      </div>
+      <div class="field">
+        <label for="token_name">Label (optional)</label>
+        <input id="token_name" name="token_name" maxlength="64" placeholder="ci">
+      </div>
+      <button type="submit" class="inline-btn">Generate token</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Tokens</h2>
+    {{if .Tokens}}
+    <table>
+      <thead><tr><th>Repository</th><th>Label</th><th>Created</th><th>Last used</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {{range .Tokens}}
+        <tr>
+          <td>{{if .Repository}}<code>{{.Repository}}</code>{{else}}<span class="muted">any</span>{{end}}</td>
+          <td>{{if .Name}}{{.Name}}{{else}}<span class="muted">—</span>{{end}}</td>
+          <td class="muted">{{ftime .CreatedAt}}</td>
+          <td class="muted">{{if .LastUsed.IsZero}}never{{else}}{{ftime .LastUsed}}{{end}}</td>
+          <td>{{if .Revoked}}<span class="pill off">revoked</span>{{else}}<span class="pill on">active</span>{{end}}</td>
+          <td>
+            {{if not .Revoked}}
+            <form method="POST" action="/org/{{$.Org.ID}}/tokens" class="inline">
+              <input type="hidden" name="_csrf" value="{{$.CSRF}}">
+              <input type="hidden" name="action" value="revoke">
+              <input type="hidden" name="id" value="{{.ID}}">
+              <button type="submit">Revoke</button>
+            </form>
+            {{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{else}}<p class="muted">No tokens yet.</p>{{end}}
+  </div>
+
+  {{template "ghfooter"}}
+</body>
+</html>

@@ -1,0 +1,21 @@
+Egret Nest Dashboard is installed as "{{ .Release.Name }}".
+
+{{ if and (not .Values.existingSecret) (not .Values.secrets.secretKey) -}}
+⚠  WARNING: no EGRET_NEST_SECRET_KEY is set (secrets.secretKey / existingSecret).
+   TOTP 2FA seeds will be stored UNENCRYPTED at rest. Set one and upgrade:
+     helm upgrade {{ .Release.Name }} . --set secrets.secretKey=$(openssl rand -hex 32)
+{{ end -}}
+{{ if not .Values.config.baseURL -}}
+⚠  config.baseURL is empty — required for SSO redirects and Secure/__Host- cookies
+   when behind an ingress. Set it to your external https:// URL.
+{{ end }}
+Access:
+{{- if .Values.ingress.enabled }}
+  https://{{ .Values.ingress.host }}/
+{{- else }}
+  kubectl port-forward svc/{{ include "egret-nest.fullname" . }} 8080:{{ .Values.service.port }}
+  then open http://localhost:8080/  (first visit -> /setup to create the admin)
+{{- end }}
+
+The store is embedded SQLite (single writer): keep replicas at 1. Back up with
+`kubectl exec <pod> -- /egret-nest backup /data/backup.db` and copy it off-cluster.

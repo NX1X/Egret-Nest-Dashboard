@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — first-run setup</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body class="auth">
+  <h1>🪶 {{.Instance}} — setup</h1>
+  <p class="intro">Create the first administrator account. This page is only
+    available until an account exists. Paste the <b>setup token</b> printed in the
+    server log at first start.</p>
+  {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+  <form method="POST" action="/setup" autocomplete="off">
+    <input type="hidden" name="_csrf" value="{{.CSRF}}">
+    <label for="setup_token">Setup token</label>
+    <input id="setup_token" name="setup_token" autocapitalize="none" autocomplete="off" required>
+    <label for="login">Admin login</label>
+    <input id="login" name="login" autocapitalize="none" autofocus required>
+    <label for="password">Password <span class="hint">(min 12 chars)</span></label>
+    <input id="password" name="password" type="password" minlength="12" required>
+    <button type="submit">Create admin &amp; sign in</button>
+  </form>
+  {{template "ghfooter"}}
+</body>
+</html>

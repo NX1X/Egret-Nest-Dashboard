@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a capability or improvement for Egret Nest Dashboard
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to do that the dashboard doesn't support today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like it to do? A new view, an ingest field, a config option, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Fit with the design
+      description: Egret Nest is a single static binary, stdlib-only, pure-Go SQLite, self-hosted. Does your idea fit that, or would it need a new dependency / service? (That's fine to note — it just informs the trade-off.)
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

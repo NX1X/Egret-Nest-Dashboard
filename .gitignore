@@ -1,0 +1,50 @@
+# Binaries
+/bin/
+/egret-nest
+*.exe
+
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Test & coverage
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Go workspace
+go.work
+go.work.sum
+
+# Local / machine-specific dev tooling & settings (not shared)
+.claude/
+CLAUDE.md
+ORDERS.md
+scripts/build_lessons_index.py
+scripts/check_opsec_sync.py
+scripts/scaffold_template_harness.py
+scripts/show_session_state.sh
+.vscode/settings.local.json
+**/settings.local.json
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# Deploy secrets — never commit (N6, infra-security HIGH#1)
+.env
+.env.*
+!.env.example
+deploy/nginx/certs/
+*.pem
+*.key
+branding/png/
+
+# Internal-only docs (dev status, security-followups, decisions, lessons, opsec)
+# Curated public docs live in docs/ + root; these never ship in the OSS repo.
+docs-internal/
+.vscode/settings.json

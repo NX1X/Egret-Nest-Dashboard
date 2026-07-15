@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "egret-nest.fullname" . }}
+  labels: {{- include "egret-nest.labels" . | nindent 4 }}
+spec:
+  # SQLite is a single writer — never run more than one replica.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "egret-nest.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "egret-nest.selectorLabels" . | nindent 8 }}
+    spec:
+      # The app never calls the Kubernetes API — don't mount a token for it.
+      automountServiceAccountToken: false
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: egret-nest
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: EGRET_NEST_DB
+              value: /data/egret-nest.db
+            - name: EGRET_NEST_INSTANCE
+              value: {{ .Values.config.instance | quote }}
+            - name: EGRET_NEST_BEHIND_PROXY
+              value: {{ if .Values.config.behindProxy }}"1"{{ else }}"0"{{ end }}
+            - name: EGRET_NEST_BASE_URL
+              value: {{ .Values.config.baseURL | quote }}
+            - name: EGRET_NEST_RETENTION_DAYS
+              value: {{ .Values.config.retentionDays | quote }}
+            - name: EGRET_NEST_AUDIT_RETENTION_DAYS
+              value: {{ .Values.config.auditRetentionDays | quote }}
+            {{- if .Values.config.githubAllowedOrg }}
+            - name: EGRET_NEST_GITHUB_ALLOWED_ORG
+              value: {{ .Values.config.githubAllowedOrg | quote }}
+            {{- end }}
+            {{- if .Values.config.oidcIssuer }}
+            - name: EGRET_NEST_OIDC_ISSUER
+              value: {{ .Values.config.oidcIssuer | quote }}
+            - name: EGRET_NEST_OIDC_CLIENT_ID
+              value: {{ .Values.config.oidcClientID | quote }}
+            - name: EGRET_NEST_OIDC_ALLOWED_DOMAIN
+              value: {{ .Values.config.oidcAllowedDomain | quote }}
+            {{- end }}
+          # Secrets (EGRET_NEST_SECRET_KEY, webhook/metrics/OAuth secrets) come
+          # from a Secret; keys absent from the Secret are simply unset.
+          envFrom:
+            - secretRef:
+                name: {{ include "egret-nest.secretName" . }}
+                optional: true
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 5
+            periodSeconds: 20
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 16Mi }
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "egret-nest.fullname" . }}-data
+        {{- else }}
+          emptyDir: {}
+        {{- end }}

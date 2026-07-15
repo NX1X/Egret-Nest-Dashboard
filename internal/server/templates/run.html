@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Instance}} — run #{{.Run.ID}}</title>
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  {{template "topnav" .}}
+  <p><a href="/">← all runs</a></p>
+  <h1>Run #{{.Run.ID}} <span class="muted">{{.Run.Repository}}</span></h1>
+  <p class="meta">
+    commit <code>{{short .Run.SHA}}</code> · mode <b>{{.Run.Mode}}</b> ·
+    exit {{.Run.ExitCode}} · workflow {{.Run.Workflow}} ·
+    by {{if .Run.Actor}}{{.Run.Actor}}{{else}}—{{end}} ·
+    received {{ftime .Run.ReceivedAt}}
+  </p>
+
+  {{with .Run.Session}}
+  <h2>⚠️ Violations ({{len .Violations}})</h2>
+  {{if .Violations}}
+  <table>
+    <thead><tr><th>Kind</th><th>Reason</th><th>Detail</th><th>Enforced</th></tr></thead>
+    <tbody>
+      {{range .Violations}}
+      <tr>
+        <td>{{.Kind}}</td>
+        <td class="viol">{{.Reason}}</td>
+        <td><code>{{.Detail}}</code></td>
+        <td>{{if .Blocked}}<span class="blocked">blocked</span>{{else}}<span class="flagged">flagged</span>{{end}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="muted">None 🎉</p>{{end}}
+
+  <h2>🌐 Connections ({{len .Connections}})</h2>
+  {{if .Connections}}
+  <table>
+    <thead><tr><th>PID</th><th>Process</th><th>Destination</th><th>Port</th><th>Proto</th></tr></thead>
+    <tbody>
+      {{range .Connections}}
+      <tr>
+        <td>{{.PID}}</td>
+        <td>{{.Comm}}</td>
+        <td>{{if .Domain}}{{.Domain}} <span class="muted">({{.Daddr}})</span>{{else}}<code>{{.Daddr}}</code>{{end}}</td>
+        <td>{{.Dport}}</td>
+        <td>{{.Proto}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="muted">None recorded.</p>{{end}}
+
+  <h2>📝 File writes ({{len .FileWrites}})</h2>
+  {{if .FileWrites}}
+  <table>
+    <thead><tr><th>PID</th><th>Process</th><th>Op</th><th>Path</th></tr></thead>
+    <tbody>
+      {{range .FileWrites}}
+      <tr><td>{{.PID}}</td><td>{{.Comm}}</td><td>{{.Op}}</td><td><code>{{.Path}}</code></td></tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="muted">None.</p>{{end}}
+  {{end}}
+  {{template "ghfooter"}}
+</body>
+</html>
