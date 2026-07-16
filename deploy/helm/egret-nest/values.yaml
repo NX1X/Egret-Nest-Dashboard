@@ -2,7 +2,7 @@
 
 image:
   repository: ghcr.io/nx1x/egret-nest
-  tag: ""              # defaults to .Chart.AppVersion
+  tag: "@sha256:11aa35caba2a8575c45339d3e209162f422149a8376c9a82fc4ea495c1a2e29c"              # defaults to .Chart.AppVersion
   pullPolicy: IfNotPresent
 
 # IMPORTANT: the store is embedded SQLite (single writer), so this MUST stay 1.
