@@ -161,13 +161,43 @@ jobs:
             docker tag "${IMG}:${TAG}" "${IMG}:latest"
             docker push "${IMG}:latest"
             echo "Moved :latest to ${TAG} (highest published release)."
+            echo "is_latest=true" >> "${GITHUB_OUTPUT}"
           else
             echo "::notice::${TAG} is older than ${HIGHEST}; leaving :latest unchanged."
+            echo "is_latest=false" >> "${GITHUB_OUTPUT}"
           fi
           DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMG}:${TAG}" | cut -d@ -f2)
           echo "image=${IMG}" >> "${GITHUB_OUTPUT}"
           echo "digest=${DIGEST}" >> "${GITHUB_OUTPUT}"
           echo "Pushed ${IMG}:${TAG} @ ${DIGEST}"
+
+      # Mirror the SAME image to Docker Hub (for distribution + public pull count).
+      # The token lives ONLY in the login step, after `docker build` has already
+      # run, so third-party build code never sees it. Requires two repo secrets:
+      # DOCKERHUB_USERNAME (a Docker Hub account) + DOCKERHUB_TOKEN (a Read & Write
+      # access token). The image digest is identical to GHCR, so the GHCR build
+      # attestation still verifies this copy by digest.
+      - name: Log in to Docker Hub
+        env:
+          DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          DH_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: echo "${DH_TOKEN}" | docker login docker.io -u "${DH_USER}" --password-stdin
+
+      - name: Mirror image to Docker Hub
+        env:
+          DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          SRC: ${{ steps.build.outputs.image }}
+          IS_LATEST: ${{ steps.build.outputs.is_latest }}
+        run: |
+          DH=$(echo "docker.io/${DH_USER}/egret-nest" | tr '[:upper:]' '[:lower:]')
+          docker tag "${SRC}:${TAG}" "${DH}:${TAG}"
+          docker push "${DH}:${TAG}"
+          if [ "${IS_LATEST}" = "true" ]; then
+            docker tag "${SRC}:${TAG}" "${DH}:latest"
+            docker push "${DH}:latest"
+            echo "Pushed ${DH}:latest"
+          fi
+          echo "Pushed ${DH}:${TAG}"
 
       # SLSA build provenance for the image (verify with:
       #   gh attestation verify oci://ghcr.io/nx1x/egret-nest@<digest> --repo NX1X/Egret-Nest-Dashboard)
