@@ -152,24 +152,40 @@ jobs:
           IMG=$(echo "ghcr.io/${OWNER}/egret-nest" | tr '[:upper:]' '[:lower:]')
           docker build --build-arg VERSION="${TAG}" -t "${IMG}:${TAG}" .
           docker push "${IMG}:${TAG}"
-          # Move the floating :latest tag ONLY when this tag is the highest published
-          # release. Without this, a manual workflow_dispatch re-run of an OLDER tag
-          # would silently regress :latest to a stale (possibly vulnerable) image.
-          HIGHEST=$(gh release list --exclude-drafts --exclude-pre-releases \
-            --json tagName --jq '.[].tagName' | sort -V | tail -1)
-          if [ -z "${HIGHEST}" ] || [ "$(printf '%s\n%s\n' "${HIGHEST}" "${TAG}" | sort -V | tail -1)" = "${TAG}" ]; then
-            docker tag "${IMG}:${TAG}" "${IMG}:latest"
-            docker push "${IMG}:latest"
-            echo "Moved :latest to ${TAG} (highest published release)."
-            echo "is_latest=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "::notice::${TAG} is older than ${HIGHEST}; leaving :latest unchanged."
-            echo "is_latest=false" >> "${GITHUB_OUTPUT}"
-          fi
+          # Floating tags: latest, vMAJOR (v0), vMAJOR.MINOR (v0.1). Each moves ONLY
+          # when TAG is the highest published release within its own scope, so a
+          # manual re-run of an OLDER tag never regresses a floating tag to a stale
+          # (possibly vulnerable) image.
+          RELEASES=$(gh release list --exclude-drafts --exclude-pre-releases \
+            --json tagName --jq '.[].tagName' || true)
+          MAJOR=$(printf '%s' "${TAG}" | cut -d. -f1)     # e.g. v0
+          MINOR=$(printf '%s' "${TAG}" | cut -d. -f1-2)   # e.g. v0.1
+          is_highest() {  # $1 = "@" for all releases, else a vX / vX.Y prefix
+            local pool hi esc
+            if [ "$1" = "@" ]; then
+              pool="${RELEASES}"
+            else
+              esc=$(printf '%s' "$1" | sed 's/[.]/\\./g')
+              pool=$(printf '%s\n' "${RELEASES}" | grep -E "^${esc}(\.|$)" || true)
+            fi
+            hi=$(printf '%s\n' "${pool}" | sort -V | tail -1)
+            [ -z "${hi}" ] || [ "$(printf '%s\n%s\n' "${hi}" "${TAG}" | sort -V | tail -1)" = "${TAG}" ]
+          }
+          FLOAT=""
+          is_highest "@"        && FLOAT="${FLOAT} latest"
+          is_highest "${MAJOR}" && FLOAT="${FLOAT} ${MAJOR}"
+          is_highest "${MINOR}" && FLOAT="${FLOAT} ${MINOR}"
+          FLOAT=$(echo ${FLOAT})   # normalize whitespace
+          for t in ${FLOAT}; do
+            docker tag "${IMG}:${TAG}" "${IMG}:${t}"
+            docker push "${IMG}:${t}"
+            echo "Moved ${IMG}:${t} -> ${TAG}"
+          done
           DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMG}:${TAG}" | cut -d@ -f2)
           echo "image=${IMG}" >> "${GITHUB_OUTPUT}"
           echo "digest=${DIGEST}" >> "${GITHUB_OUTPUT}"
-          echo "Pushed ${IMG}:${TAG} @ ${DIGEST}"
+          echo "float=${FLOAT}" >> "${GITHUB_OUTPUT}"
+          echo "Pushed ${IMG}:${TAG} @ ${DIGEST} (float: ${FLOAT:-none})"
 
       # Mirror the SAME image to Docker Hub (for distribution + public pull count).
       # The token lives ONLY in the login step, after `docker build` has already
@@ -187,17 +203,17 @@ jobs:
         env:
           DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           SRC: ${{ steps.build.outputs.image }}
-          IS_LATEST: ${{ steps.build.outputs.is_latest }}
+          FLOAT: ${{ steps.build.outputs.float }}
         run: |
           DH=$(echo "docker.io/${DH_USER}/egret-nest" | tr '[:upper:]' '[:lower:]')
           docker tag "${SRC}:${TAG}" "${DH}:${TAG}"
           docker push "${DH}:${TAG}"
-          if [ "${IS_LATEST}" = "true" ]; then
-            docker tag "${SRC}:${TAG}" "${DH}:latest"
-            docker push "${DH}:latest"
-            echo "Pushed ${DH}:latest"
-          fi
-          echo "Pushed ${DH}:${TAG}"
+          for t in ${FLOAT}; do
+            docker tag "${SRC}:${TAG}" "${DH}:${t}"
+            docker push "${DH}:${t}"
+            echo "Pushed ${DH}:${t}"
+          done
+          echo "Pushed ${DH}:${TAG} (float: ${FLOAT:-none})"
 
       # SLSA build provenance for the image (verify with:
       #   gh attestation verify oci://ghcr.io/nx1x/egret-nest@<digest> --repo NX1X/Egret-Nest-Dashboard)
