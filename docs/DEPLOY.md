@@ -16,6 +16,10 @@ The image is published to **GitHub Container Registry** (`ghcr.io/nx1x/egret-nes
 with SLSA build provenance) and mirrored on **Docker Hub** (`nx1x/egret-nest`). Swap the
 image reference to pull from either.
 
+> **Beta:** the Docker Hub mirror is newly wired into the release workflow and has not been
+> fully validated across a release cycle yet. GHCR is the canonical, signed source; prefer
+> it if you need the SLSA attestation.
+
 Open http://localhost:8080 → first visit is `/setup` (create the admin).
 
 ## 2. docker compose (with optional nginx TLS)
