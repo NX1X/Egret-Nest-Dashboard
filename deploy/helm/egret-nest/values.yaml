@@ -1,6 +1,8 @@
 # Egret Nest Dashboard — Helm values.
 
 image:
+  # GHCR is auto-published + SLSA-signed by the release workflow. Docker Hub mirror:
+  # set repository to nx1x/egret-nest to pull from there instead.
   repository: ghcr.io/nx1x/egret-nest
   tag: ""              # defaults to .Chart.AppVersion
   pullPolicy: IfNotPresent

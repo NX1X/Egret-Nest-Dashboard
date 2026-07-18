@@ -22,8 +22,9 @@
 ## Run it
 
 ```bash
-# Docker (recommended for self-hosting)
+# Docker (recommended for self-hosting) - GitHub Container Registry or Docker Hub
 docker run -p 8080:8080 -v egret-nest-data:/data ghcr.io/nx1x/egret-nest:latest
+# Docker Hub:  docker run -p 8080:8080 -v egret-nest-data:/data nx1x/egret-nest:latest
 
 # or from source
 make run     # listens on :8080, db in ./egret-nest.db

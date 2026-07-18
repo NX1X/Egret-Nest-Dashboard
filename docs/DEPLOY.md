@@ -12,6 +12,10 @@ docker run -d -p 8080:8080 -v egret-nest-data:/data \
   ghcr.io/nx1x/egret-nest:latest
 ```
 
+The image is published to **GitHub Container Registry** (`ghcr.io/nx1x/egret-nest`, signed
+with SLSA build provenance) and mirrored on **Docker Hub** (`nx1x/egret-nest`). Swap the
+image reference to pull from either.
+
 Open http://localhost:8080 → first visit is `/setup` (create the admin).
 
 ## 2. docker compose (with optional nginx TLS)

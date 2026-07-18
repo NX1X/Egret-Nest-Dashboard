@@ -11,6 +11,7 @@ services:
       context: .
       args:
         VERSION: ${EGRET_NEST_VERSION:-dev}
+    # GHCR (auto-published + SLSA-signed). Docker Hub mirror: nx1x/egret-nest
     image: ghcr.io/nx1x/egret-nest:${EGRET_NEST_VERSION:-latest}
     restart: unless-stopped
     # No published port when running behind nginx (the tls profile); for the
