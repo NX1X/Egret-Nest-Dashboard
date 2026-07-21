@@ -56,16 +56,16 @@ jobs:
           [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "::error::TAG '${TAG}' is not a vMAJOR.MINOR.PATCH release tag."; exit 1; }
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ env.TAG }}
           persist-credentials: false
 
-      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           # Pin the patched toolchain (GO-2026-5856, crypto/tls ECH leak, fixed in
           # 1.25.12) so the release binary + image ship reproducibly + vuln-free.
-          go-version: "1.25.12"
+          go-version: "1.26.4"
           # No build cache on the release/trust path: a cache entry populated by a
           # lower-privileged workflow (PR) must not be restorable here (cache poisoning).
           cache: false
@@ -131,7 +131,7 @@ jobs:
           [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "::error::TAG '${TAG}' is not a vMAJOR.MINOR.PATCH release tag."; exit 1; }
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ env.TAG }}
           persist-credentials: false
