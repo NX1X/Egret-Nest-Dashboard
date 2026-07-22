@@ -30,7 +30,7 @@ CLAUDE.md
 Thumbs.db
 *.swp
 
-# Deploy secrets — never commit (N6, infra-security HIGH#1)
+# Deploy secrets - never commit (N6, infra-security HIGH#1)
 .env
 .env.*
 !.env.example

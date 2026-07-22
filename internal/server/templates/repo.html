@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — {{.Repo}}</title>
+<title>{{.Instance}} - {{.Repo}}</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
@@ -29,7 +29,7 @@
         <td>{{.Mode}}</td>
         <td>{{.NumConnections}}</td>
         <td>{{if .NumViolations}}<span class="viol">{{.NumViolations}}</span>{{else}}<span class="ok">0</span>{{end}}</td>
-        <td>{{if .NumNewEndpoints}}<span class="new">+{{.NumNewEndpoints}}</span>{{else}}<span class="muted">—</span>{{end}}</td>
+        <td>{{if .NumNewEndpoints}}<span class="new">+{{.NumNewEndpoints}}</span>{{else}}<span class="muted">-</span>{{end}}</td>
         <td class="muted">{{ftime .ReceivedAt}}</td>
       </tr>
       {{end}}

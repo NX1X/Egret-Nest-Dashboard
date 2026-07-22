@@ -1,4 +1,4 @@
-# CODEOWNERS — auto-assign reviewers and enforce review on sensitive paths.
+# CODEOWNERS - auto-assign reviewers and enforce review on sensitive paths.
 # Combined with "Require review from Code Owners" in branch protection.
 
 # Everything has a default owner
@@ -9,14 +9,14 @@
 /.github/workflows/                 @NX1X
 /SECURITY.md                        @NX1X
 
-# Ingest boundary + auth — security gate
+# Ingest boundary + auth - security gate
 /internal/server/                   @NX1X
 /docs/AUTH.md                       @NX1X
 
-# Data layer — SQL injection / IDOR / cross-tenant isolation
+# Data layer - SQL injection / IDOR / cross-tenant isolation
 /internal/store/                    @NX1X
 
-# Rendered output — XSS surface
+# Rendered output - XSS surface
 /internal/server/templates/         @NX1X
 
 # Runtime hardening

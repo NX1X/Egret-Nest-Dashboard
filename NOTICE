@@ -1,18 +1,18 @@
 Egret Nest Dashboard
 Copyright 2026 NX1X (https://nx1xlab.dev)
-Author: NX1X — https://nx1xlab.dev · contact: https://nx1xlab.dev/contact
+Author: NX1X - https://nx1xlab.dev · contact: https://nx1xlab.dev/contact
 
 This product includes software authored by NX1X (https://nx1xlab.dev) and contributors.
 
 Licensed under the Apache License, Version 2.0 (see LICENSE).
 
 Bundled/third-party components:
-- modernc.org/sqlite (pure-Go SQLite) — BSD-3-Clause.
-- github.com/coreos/go-oidc/v3 — Apache-2.0. Includes software from the CoreOS
+- modernc.org/sqlite (pure-Go SQLite) - BSD-3-Clause.
+- github.com/coreos/go-oidc/v3 - Apache-2.0. Includes software from the CoreOS
   project: "CoreOS Project, Copyright 2014 CoreOS, Inc."
-- github.com/go-jose/go-jose/v4 — Apache-2.0.
-- golang.org/x/crypto, golang.org/x/oauth2, golang.org/x/* — BSD-3-Clause
+- github.com/go-jose/go-jose/v4 - Apache-2.0.
+- golang.org/x/crypto, golang.org/x/oauth2, golang.org/x/* - BSD-3-Clause
   (The Go Authors).
-- github.com/golang-jwt/jwt — MIT.
+- github.com/golang-jwt/jwt - MIT.
 
 Full dependency inventory and license policy: docs/DEPENDENCIES.md.

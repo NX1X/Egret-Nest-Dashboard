@@ -9,13 +9,13 @@ import (
 )
 
 // SSO providers (GitHub OAuth, OIDC) can be configured two ways:
-//   - Environment variables (12-factor / GitOps) — authoritative when set.
-//   - The admin UI at /admin/auth — stored in the settings table, with client
+//   - Environment variables (12-factor / GitOps) - authoritative when set.
+//   - The admin UI at /admin/auth - stored in the settings table, with client
 //     secrets ENCRYPTED at rest (EGRET_NEST_SECRET_KEY). Applied only where the
 //     corresponding env var is NOT set, so env always wins.
 //
 // The effective config is recomputed and the providers rebuilt+atomically swapped
-// by reloadAuthProviders — at startup (from New) and after every /admin/auth save.
+// by reloadAuthProviders - at startup (from New) and after every /admin/auth save.
 
 // setting keys for UI-stored auth config (secrets marked).
 const (
@@ -40,7 +40,7 @@ const (
 
 // effectiveAuthConfig returns s.cfg with GitHub/OIDC fields filled from the DB
 // when (and only when) the corresponding env var is unset, plus each provider's
-// source. Env always takes precedence — a provider set in the environment is
+// source. Env always takes precedence - a provider set in the environment is
 // never overridden by UI-stored values.
 func (s *Server) effectiveAuthConfig() (cfg Config, gh authSource, oidc authSource, err error) {
 	cfg = s.cfg // copy; s.cfg (the env config) is never mutated
@@ -106,7 +106,7 @@ var (
 	errIssuerBlocked = errors.New("the OIDC issuer resolves to a disallowed (internal/loopback) address")
 )
 
-// reloadAuthProviders rebuilds BOTH providers — used only at startup. Runtime
+// reloadAuthProviders rebuilds BOTH providers - used only at startup. Runtime
 // changes go through reloadGitHub / reloadOIDC so a failure in one provider (e.g.
 // an OIDC issuer that won't resolve) can never block or silently no-op a change to
 // the other. Startup wants a config error to fail loudly, so it returns the error.
@@ -118,7 +118,7 @@ func (s *Server) reloadAuthProviders(ctx context.Context) error {
 }
 
 // reloadGitHub rebuilds and atomically swaps the GitHub provider from the effective
-// config. It performs no network I/O, so it cannot fail transiently — a GitHub
+// config. It performs no network I/O, so it cannot fail transiently - a GitHub
 // enable/disable is deterministic and never blocked by OIDC health.
 func (s *Server) reloadGitHub() error {
 	cfg, _, _, err := s.effectiveAuthConfig()
@@ -145,7 +145,7 @@ func (s *Server) reloadOIDC(ctx context.Context) error {
 	// SSRF guard for UI-supplied issuers only. Env-configured issuers are operator
 	// intent (may legitimately be an internal IdP) and are trusted as-is. For a
 	// UI issuer, reject one that resolves internal at save time (fail fast), and
-	// route every OIDC network call (discovery, JWKS, token/userinfo — including
+	// route every OIDC network call (discovery, JWKS, token/userinfo - including
 	// endpoints the discovery document itself declares) through a guarded client
 	// that re-checks the *resolved* IP at dial time, so a DNS rebind or an
 	// attacker-declared token_endpoint can't land a fetch on an internal address.
@@ -169,7 +169,7 @@ func (s *Server) reloadOIDC(ctx context.Context) error {
 
 // validateIssuerURL enforces https and rejects, at save time, an issuer that
 // resolves to loopback/link-local/private/unspecified addresses (the cloud-metadata
-// IP 169.254.169.254 is link-local, so it's covered) — a fail-fast check so an
+// IP 169.254.169.254 is link-local, so it's covered) - a fail-fast check so an
 // obviously-internal issuer is refused before it's stored. The dial-time guard in
 // guardedOIDCClient re-checks the resolved IP on every OIDC fetch, so this save-time
 // check is UX/defence-in-depth, not the sole barrier (it can't be, across a rebind).

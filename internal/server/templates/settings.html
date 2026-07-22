@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — settings</title>
+<title>{{.Instance}} - settings</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— settings</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- settings</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -48,14 +48,14 @@
     <p class="note"><code>GET /metrics</code> serves Prometheus-format counters. It is disabled
       until a token exists, then requires that token as a <code>Bearer</code> credential.</p>
     {{if .NewMetricsToken}}
-    <p class="warn">Copy this token now — it is shown only once:</p>
+    <p class="warn">Copy this token now - it is shown only once:</p>
     <div class="secretbox">{{.NewMetricsToken}}</div>
     <pre class="snippet">curl -H "Authorization: Bearer {{.NewMetricsToken}}" &lt;dashboard&gt;/metrics</pre>
     {{end}}
     {{if .MetricsEnvSet}}
     <p class="warn">A token is also set via the <code>EGRET_NEST_METRICS_TOKEN</code>
       environment variable. Generating one here overrides it; <b>Disable</b> only
-      removes the token set here — to fully turn <code>/metrics</code> off you must
+      removes the token set here - to fully turn <code>/metrics</code> off you must
       unset that environment variable and restart.</p>
     {{end}}
     <form method="POST" action="/admin/settings">
@@ -75,7 +75,7 @@
   <div class="card">
     <h2>Authentication methods</h2>
     <p class="note">Manage login providers on the <a href="/admin/auth">Authentication</a>
-      page — configure GitHub/OIDC in the UI (client secrets encrypted at rest) or via
+      page - configure GitHub/OIDC in the UI (client secrets encrypted at rest) or via
       environment variables (which take precedence). Below is a read-only summary.</p>
     <table>
       <thead><tr><th>Method</th><th>Status</th><th>Enable / configure</th></tr></thead>
@@ -106,7 +106,7 @@
         </tr>
       </tbody>
     </table>
-    <p class="note">SSO logins authenticate identity only — a new SSO user gets
+    <p class="note">SSO logins authenticate identity only - a new SSO user gets
       <b>no access</b> until an admin grants an org on <a href="/admin/users">Users</a>
       (fail-closed). See <code>docs/AUTH.md</code>.</p>
   </div>

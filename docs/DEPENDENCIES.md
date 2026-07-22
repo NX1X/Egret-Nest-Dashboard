@@ -1,4 +1,4 @@
-# Dependency Policy — Egret Nest Dashboard
+# Dependency Policy - Egret Nest Dashboard
 
 This mirrors the [Egret dependency policy](https://github.com/NX1X/Egret/blob/main/docs/DEPENDENCIES.md).
 Egret is a supply-chain security tool; the dashboard's own dependencies are
@@ -22,7 +22,7 @@ attack surface and are vetted before adoption.
 - Prefer the **standard library**: `net/http` (Go 1.22 routing), `html/template`
   (auto-escaping), `database/sql`, `go:embed`, `crypto/subtle`, `encoding/json`.
 - **No npm / Node build chain.** If interactivity is needed, vendor a single
-  pinned, SRI-hashed `htmx.min.js` — never a package manager.
+  pinned, SRI-hashed `htmx.min.js` - never a package manager.
 - CI runs `govulncheck`, `go mod verify`, `gofmt -l`, `go vet`.
 
 ## Allowed
@@ -46,7 +46,7 @@ Optional, only when justified (not yet used):
 
 | Package / class | Reason | Use instead |
 |---|---|---|
-| `github.com/mattn/go-sqlite3` | **CGO** — breaks the static single-binary goal | `modernc.org/sqlite` |
+| `github.com/mattn/go-sqlite3` | **CGO** - breaks the static single-binary goal | `modernc.org/sqlite` |
 | `github.com/dgrijalva/jwt-go` | abandoned; CVE-2020-26160 | `github.com/golang-jwt/jwt/v5` |
 | npm/Node build chains for the UI | large opaque supply-chain surface | vendored, pinned, SRI assets |
 | Heavy web frameworks | unnecessary; stdlib suffices | `net/http` |

@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — users</title>
+<title>{{.Instance}} - users</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— users &amp; access</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- users &amp; access</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -20,7 +20,7 @@
   </div>
   {{template "topnav" .}}
 
-  <p class="note">SSO users (GitHub/OIDC) are provisioned with <b>no access</b> —
+  <p class="note">SSO users (GitHub/OIDC) are provisioned with <b>no access</b> -
     grant them a specific organization here. A user sees only the runs/repos in
     organizations they belong to.</p>
 
@@ -45,7 +45,7 @@
               <button type="submit">revoke</button>
             </form>
             {{end}}
-          {{else}}<span class="muted">— no access —</span>{{end}}
+          {{else}}<span class="muted">- no access -</span>{{end}}
         </td>
         <td>
           {{if $.Orgs}}

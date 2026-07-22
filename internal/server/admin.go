@@ -52,7 +52,7 @@ func (s *Server) metricsAuthorized(presented string) (enabled, ok bool) {
 // handleMetrics serves Prometheus text-format counters. It is disabled (404)
 // unless a metrics token is configured (via the admin Settings page or the
 // EGRET_NEST_METRICS_TOKEN env var), and then requires that bearer token
-// (constant-time) — metrics reveal fleet size / activity and must not be public.
+// (constant-time) - metrics reveal fleet size / activity and must not be public.
 func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 	enabled, ok := s.metricsAuthorized(bearerToken(r))
 	if !enabled {
@@ -80,7 +80,7 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 // RunJanitor runs periodic maintenance until ctx is cancelled: it always prunes
-// expired sessions and stale anti-replay records, and — when RetentionDays > 0 —
+// expired sessions and stale anti-replay records, and - when RetentionDays > 0 -
 // deletes runs and audit events past the retention window. Runs once immediately,
 // then hourly. Errors are logged, never fatal.
 func (s *Server) RunJanitor(ctx context.Context) {
@@ -256,7 +256,7 @@ func (s *Server) renderTokens(w http.ResponseWriter, r *http.Request, newToken, 
 		"Instance": s.instanceName(), "User": currentUser(r), "CSRF": s.csrfToken(w, r), "Active": "tokens",
 		"Orgs": orgs, "Tokens": tokens, "IngestURL": s.externalURL(r) + "/ingest",
 		// When BaseURL is unset the URL is derived from the request Host (which is
-		// client-controlled) — surface that so the admin sets a trusted base URL
+		// client-controlled) - surface that so the admin sets a trusted base URL
 		// rather than pasting a host-derived endpoint into CI.
 		"IngestURLDerived": s.cfg.BaseURL == "",
 		"NewToken":         newToken, "SnippetRepo": snippetRepo,

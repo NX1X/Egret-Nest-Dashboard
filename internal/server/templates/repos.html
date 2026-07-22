@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — repositories</title>
+<title>{{.Instance}} - repositories</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— repositories</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- repositories</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -35,7 +35,7 @@
     </tbody>
   </table>
   {{else}}
-  <p class="empty">No repositories yet — ingest a run to get started.</p>
+  <p class="empty">No repositories yet - ingest a run to get started.</p>
   {{end}}
   {{template "ghfooter"}}
 </body>

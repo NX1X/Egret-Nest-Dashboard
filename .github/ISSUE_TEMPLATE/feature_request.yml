@@ -20,7 +20,7 @@ body:
     id: constraints
     attributes:
       label: Fit with the design
-      description: Egret Nest is a single static binary, stdlib-only, pure-Go SQLite, self-hosted. Does your idea fit that, or would it need a new dependency / service? (That's fine to note — it just informs the trade-off.)
+      description: Egret Nest is a single static binary, stdlib-only, pure-Go SQLite, self-hosted. Does your idea fit that, or would it need a new dependency / service? (That's fine to note - it just informs the trade-off.)
   - type: textarea
     id: alternatives
     attributes:

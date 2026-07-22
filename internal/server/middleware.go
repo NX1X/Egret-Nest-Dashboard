@@ -73,7 +73,7 @@ func (w *statusWriter) Write(b []byte) (int, error) {
 // accessLog records each request (method, path, status, duration, user) to the
 // console and the in-memory ring buffer that powers the admin "Logs" page. It
 // runs after sessionLoader so the authenticated user is known. Sensitive query
-// strings are dropped — only the path is recorded.
+// strings are dropped - only the path is recorded.
 func (s *Server) accessLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -97,7 +97,7 @@ func (s *Server) accessLog(next http.Handler) http.Handler {
 			who = "-"
 		}
 		// %q escapes CR/LF/control bytes in the (percent-decoded) path so a crafted
-		// request target can't forge log lines (CWE-117). The ring buffer is safe —
+		// request target can't forge log lines (CWE-117). The ring buffer is safe -
 		// it's rendered via html/template.
 		log.Printf("egret-nest: %s %q %d %dms ip=%s user=%s",
 			r.Method, r.URL.Path, sw.status, dur.Milliseconds(), entry.IP, who)
@@ -118,7 +118,7 @@ func (s *Server) recoverPanic(next http.Handler) http.Handler {
 }
 
 // sessionLoader resolves the session cookie to a user and stores it in the
-// request context (nil when unauthenticated). It never rejects — requireAuth does.
+// request context (nil when unauthenticated). It never rejects - requireAuth does.
 func (s *Server) sessionLoader(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if val, ok := s.readCookie(r, sessionCookie); ok {
@@ -151,8 +151,8 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // requireAdmin wraps a handler for instance-admin-only pages (e.g. the audit
-// log): anonymous users are sent to /login, authenticated non-admins get a 404 —
-// not a 403 — so the page's existence isn't confirmed to a non-admin.
+// log): anonymous users are sent to /login, authenticated non-admins get a 404 -
+// not a 403 - so the page's existence isn't confirmed to a non-admin.
 func (s *Server) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u := currentUser(r)

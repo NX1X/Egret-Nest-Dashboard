@@ -4,7 +4,7 @@ metadata:
   name: {{ include "egret-nest.fullname" . }}
   labels: {{- include "egret-nest.labels" . | nindent 4 }}
 spec:
-  # SQLite is a single writer — never run more than one replica.
+  # SQLite is a single writer - never run more than one replica.
   replicas: 1
   strategy:
     type: Recreate
@@ -14,7 +14,7 @@ spec:
     metadata:
       labels: {{- include "egret-nest.selectorLabels" . | nindent 8 }}
     spec:
-      # The app never calls the Kubernetes API — don't mount a token for it.
+      # The app never calls the Kubernetes API - don't mount a token for it.
       automountServiceAccountToken: false
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

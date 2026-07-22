@@ -112,7 +112,7 @@ func TestGitHubOAuthProvisionsAndLogsIn(t *testing.T) {
 
 	// Fail-closed authorization: passing the GitHub-org gate is authentication,
 	// not access to any tenant. A freshly-provisioned SSO user must have ZERO org
-	// memberships until an instance admin grants one — otherwise every org member
+	// memberships until an instance admin grants one - otherwise every org member
 	// could read every connected repo's telemetry (N7 cross-tenant blocker).
 	mships, err := st.MembershipsForUser(u.ID)
 	if err != nil {

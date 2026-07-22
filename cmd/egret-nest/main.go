@@ -130,7 +130,7 @@ func serve() {
 		log.Fatalf("egret-nest: EGRET_NEST_SECRET_KEY: %v", err)
 	}
 	if box == nil {
-		log.Printf("egret-nest: WARNING — EGRET_NEST_SECRET_KEY not set; TOTP seeds are stored unencrypted")
+		log.Printf("egret-nest: WARNING - EGRET_NEST_SECRET_KEY not set; TOTP seeds are stored unencrypted")
 	}
 	st.UseSecretBox(box)
 
@@ -168,7 +168,7 @@ func serve() {
 	}
 
 	// Native TLS: set BOTH EGRET_NEST_TLS_CERT and EGRET_NEST_TLS_KEY (PEM paths)
-	// to serve HTTPS directly. Otherwise the server speaks plain HTTP — intended
+	// to serve HTTPS directly. Otherwise the server speaks plain HTTP - intended
 	// to sit behind a TLS-terminating proxy (set EGRET_NEST_BEHIND_PROXY=1) or on
 	// localhost. When TLS is on, requests arrive with r.TLS set, so session/CSRF
 	// cookies get the Secure + __Host- treatment and HSTS automatically.

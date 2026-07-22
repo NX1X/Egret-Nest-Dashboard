@@ -12,11 +12,11 @@ import (
 )
 
 // SecretBox provides authenticated encryption (AES-256-GCM) for small secrets
-// stored at rest — specifically TOTP seeds, which are password-equivalent: with
+// stored at rest - specifically TOTP seeds, which are password-equivalent: with
 // the plaintext seed an attacker who reads the database can mint valid 2FA codes.
 //
 // Stored form is "enc:v1:" + base64(nonce || ciphertext||tag). The version tag
-// lets us rotate schemes later, and — importantly — a value WITHOUT the prefix is
+// lets us rotate schemes later, and - importantly - a value WITHOUT the prefix is
 // treated as legacy plaintext by Decrypt, so enabling encryption on an existing
 // database is a clean, in-place upgrade (rows re-encrypt as they are rewritten).
 type SecretBox struct {
@@ -64,7 +64,7 @@ func decodeKey(key string) ([]byte, error) {
 // Encrypt returns the sealed, prefixed, base64 form of plaintext. An empty
 // plaintext is returned unchanged (no point encrypting "no secret").
 //
-// aad is authenticated-but-not-encrypted associated data bound into the tag — pass
+// aad is authenticated-but-not-encrypted associated data bound into the tag - pass
 // a stable per-row identity (e.g. the user id) so a sealed value cannot be copied
 // to a different row and still decrypt (defends against ciphertext-swap).
 func (b *SecretBox) Encrypt(plaintext string, aad []byte) (string, error) {

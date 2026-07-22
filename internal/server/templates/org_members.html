@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — {{.Org.Name}} members</title>
+<title>{{.Instance}} - {{.Org.Name}} members</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— {{.Org.Name}} · members</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- {{.Org.Name}} · members</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -24,7 +24,7 @@
     <a href="/org/{{.Org.ID}}/tokens">Ingest tokens</a>
   </nav>
 
-  <p class="note">Members of <b>{{.Org.Name}}</b> — you are
+  <p class="note">Members of <b>{{.Org.Name}}</b> - you are
     <span class="pill on">{{if .InstanceAdmin}}instance-admin{{else}}{{.Role}}{{end}}</span>.
     Roles: <code>owner</code> &gt; <code>admin</code> &gt; <code>member</code> &gt;
     <code>viewer</code>. You can only assign roles at or below your own, and can't
@@ -69,7 +69,7 @@
               <select name="role">{{range $.AssignableRoles}}<option value="{{.}}">{{.}}</option>{{end}}</select>
               <button type="submit">Set</button>
             </form>
-            {{else}}<span class="muted">—</span>{{end}}
+            {{else}}<span class="muted">-</span>{{end}}
           </td>
           <td>
             {{if .CanManage}}

@@ -1,4 +1,4 @@
-# Egret Nest Dashboard — single static binary, distroless runtime.
+# Egret Nest Dashboard - single static binary, distroless runtime.
 # Builder Go version must satisfy go.mod (go 1.26); bump the two together.
 # Base images are digest-pinned (tag kept in the comment for readability);
 # Renovate (.github/renovate.json5) bumps both the tag comment and the @sha256.
@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${VERSION}" -o /egret
 
 FROM gcr.io/distroless/static-debian12:nonroot@sha256:f5b485ea962d9bd1186b2f6b3a061191539b905b82ec395de78cbfae51f20e35
 LABEL org.opencontainers.image.source="https://github.com/NX1X/Egret-Nest-Dashboard" \
-      org.opencontainers.image.description="Egret Nest Dashboard — self-hosted CI/CD egress telemetry" \
+      org.opencontainers.image.description="Egret Nest Dashboard - self-hosted CI/CD egress telemetry" \
       org.opencontainers.image.licenses="Apache-2.0"
 COPY --from=build /egret-nest /egret-nest
 # Persist the SQLite db under /data (mount a volume here).

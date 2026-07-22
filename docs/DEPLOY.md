@@ -1,7 +1,7 @@
 # Deploying Egret Nest Dashboard
 
 The dashboard is a single static Go binary with embedded SQLite. **The store is a
-single writer — run exactly one instance** (no horizontal scaling). Back up the
+single writer - run exactly one instance** (no horizontal scaling). Back up the
 SQLite file (`egret-nest backup <path>`) rather than replicating.
 
 ## 1. Docker (quickest)
@@ -53,12 +53,12 @@ The chart runs **1 replica** (SQLite) with the `Recreate` strategy, a hardened
 pod (non-root, read-only rootfs, all caps dropped, seccomp `RuntimeDefault`), a
 PVC for `/data`, and a Secret for the sensitive env. Point `existingSecret` at
 your own Secret (same `EGRET_NEST_*` keys) to manage secrets out-of-band. TLS is
-handled by your ingress controller (e.g. cert-manager) — the app sits behind it
+handled by your ingress controller (e.g. cert-manager) - the app sits behind it
 with `config.behindProxy: true`.
 
 ## Configuration reference
 
-All configuration is via env (`EGRET_NEST_*`) — see the table in
+All configuration is via env (`EGRET_NEST_*`) - see the table in
 [`cmd/egret-nest/main.go`](../cmd/egret-nest/main.go) and [AUTH.md](AUTH.md).
 Highlights:
 
@@ -67,7 +67,7 @@ Highlights:
 | `EGRET_NEST_DB` | SQLite path (default `/data/egret-nest.db` in the image) |
 | `EGRET_NEST_SECRET_KEY` | 32-byte hex/base64 key encrypting TOTP seeds at rest (**set this**) |
 | `EGRET_NEST_BASE_URL` + `EGRET_NEST_BEHIND_PROXY=1` | required when behind a TLS proxy / for SSO redirects |
-| `EGRET_NEST_TLS_CERT` + `EGRET_NEST_TLS_KEY` | serve **HTTPS natively** (PEM paths, TLS 1.2+) instead of terminating at a proxy — set both or neither |
+| `EGRET_NEST_TLS_CERT` + `EGRET_NEST_TLS_KEY` | serve **HTTPS natively** (PEM paths, TLS 1.2+) instead of terminating at a proxy - set both or neither |
 | `EGRET_NEST_WEBHOOK_SECRET` | enables the HMAC-verified `POST /webhook/github` |
 | `EGRET_NEST_METRICS_TOKEN` | enables token-gated `/metrics` (≥32 chars) |
 | `EGRET_NEST_RETENTION_DAYS` / `_AUDIT_RETENTION_DAYS` | pruning windows (0 = keep) |
@@ -77,11 +77,11 @@ Highlights:
 
 - **Backup:** `docker exec <container> /egret-nest backup /data/backup.db` (or run
   the `backup` subcommand in the pod). The snapshot is a **credential-bearing,
-  unencrypted** SQLite file (password/session/token hashes; TOTP seeds — encrypted
+  unencrypted** SQLite file (password/session/token hashes; TOTP seeds - encrypted
   only if `EGRET_NEST_SECRET_KEY` is set). **Encrypt it before it leaves the host**
   (`age -p`, `gpg -c`) and store it **off-account** (not the same cloud creds that
   run the service). Schedule it (cron/CronJob) and **test a restore periodically**
-  — a restore is just stopping the service and swapping the DB file back in. Target
+  - a restore is just stopping the service and swapping the DB file back in. Target
   an RPO/RTO you can meet (e.g. daily backup → RPO 24h).
 - **Upgrade:** pull the new image / bump `image.tag` and restart. Schema
   migrations are idempotent and apply on startup; the DB upgrades in place.
@@ -92,4 +92,4 @@ Highlights:
   Renovate maintains the digests (see `.github/renovate.json5`).
 - A `docker-publish` CI workflow should **build from the pinned digest, scan with
   Trivy/Grype (fail on HIGH/CRITICAL), then push + sign (cosign)** by digest before
-  `ghcr.io/nx1x/egret-nest` is published. Not yet wired — track in the roadmap.
+  `ghcr.io/nx1x/egret-nest` is published. Not yet wired - track in the roadmap.

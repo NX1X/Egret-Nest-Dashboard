@@ -12,7 +12,7 @@ import (
 // TestAdminGrantsAndRevokesMembership proves the fail-closed access model's
 // escape hatch: an instance admin can explicitly grant a provisioned (but
 // access-less) SSO/local user membership in a specific org, and revoke it. This
-// is the authorization half of the N7 cross-tenant fix — SSO grants
+// is the authorization half of the N7 cross-tenant fix - SSO grants
 // authentication only; access to a tenant is always an explicit admin action.
 func TestAdminGrantsAndRevokesMembership(t *testing.T) {
 	ts, st := newTestServer(t, Config{})

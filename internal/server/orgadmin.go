@@ -54,7 +54,7 @@ func orgIDFromPath(r *http.Request) int64 {
 
 // requireOrgManager guards org-scoped management routes. Anonymous users go to
 // /login; anyone who cannot manage the org (non-member, viewer, member, or a
-// non-existent org) gets a 404 — existence is never confirmed, matching
+// non-existent org) gets a 404 - existence is never confirmed, matching
 // requireAdmin. On success the handler can trust orgAuthority again cheaply.
 func (s *Server) requireOrgManager(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -267,7 +267,7 @@ func (s *Server) handleOrgMembersPost(w http.ResponseWriter, r *http.Request) {
 	// setMembership routes every grant/role-change through the store's atomic,
 	// last-owner-guarded upsert, after checking the actor may act on the target's
 	// current role and assign the new one. Centralizing it means no action
-	// (add/setrole) can forget the guard — the bug the reviewers caught in `add`.
+	// (add/setrole) can forget the guard - the bug the reviewers caught in `add`.
 	setMembership := func(userID int64, newRole model.Role, auditAction string) {
 		if !canAssign(eff, newRole) {
 			http.Redirect(w, r, redirect+"?e=denied", http.StatusSeeOther)

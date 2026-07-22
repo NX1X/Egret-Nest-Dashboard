@@ -162,7 +162,7 @@ func (s *Store) SetMembershipRole(orgID, userID int64, newRole model.Role) error
 	err = tx.QueryRow(`SELECT role FROM memberships WHERE org_id=? AND user_id=?`, orgID, userID).Scan(&cur)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
-		// new membership — no last-owner concern
+		// new membership - no last-owner concern
 	case err != nil:
 		return err
 	case model.Role(cur) == model.RoleOwner && newRole != model.RoleOwner:

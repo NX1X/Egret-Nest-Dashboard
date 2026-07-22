@@ -1,5 +1,5 @@
 // Package model mirrors the Egret ingest contract (schema_version 1) as plain
-// Go structs. It is a deliberate *copy* of the wire shape — the dashboard does
+// Go structs. It is a deliberate *copy* of the wire shape - the dashboard does
 // NOT import the agent's Go packages, so the only coupling is the versioned
 // JSON contract documented in Egret/docs/ingest-contract.md.
 package model
@@ -31,7 +31,7 @@ type RunMeta struct {
 	Actor      string `json:"actor,omitempty"`
 }
 
-// Session is the observed run — identical shape to the agent's report.json.
+// Session is the observed run - identical shape to the agent's report.json.
 type Session struct {
 	StartedAt   time.Time    `json:"started_at"`
 	FinishedAt  time.Time    `json:"finished_at"`
@@ -54,7 +54,7 @@ type Connection struct {
 	Domain string    `json:"domain,omitempty"`
 }
 
-// Endpoint is the domain if known, else the raw IP — the identity used for
+// Endpoint is the domain if known, else the raw IP - the identity used for
 // allowlist drift.
 func (c Connection) Endpoint() string {
 	if c.Domain != "" {

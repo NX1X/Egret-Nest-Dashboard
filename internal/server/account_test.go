@@ -56,7 +56,7 @@ func TestTOTPEnrollmentLifecycle(t *testing.T) {
 
 // TestBeginCannotStripEnabledTOTP is the regression test for the appsec CRITICAL:
 // once TOTP is enabled, action=begin must NOT overwrite the secret or disable the
-// factor without a code — a session-only attacker must not be able to strip 2FA.
+// factor without a code - a session-only attacker must not be able to strip 2FA.
 func TestBeginCannotStripEnabledTOTP(t *testing.T) {
 	ts, st := newTestServer(t, Config{})
 	authedClient(t, ts)
@@ -101,7 +101,7 @@ func TestDisableIsRateLimited(t *testing.T) {
 		post(t, c, ts, "/account", url.Values{"action": {"disable"}, "code": {"000000"}}).Body.Close()
 	}
 	// Now even the CORRECT code is blocked (limiter checked before verification),
-	// so 2FA cannot be disabled — proving the throttle actually gates the action.
+	// so 2FA cannot be disabled - proving the throttle actually gates the action.
 	good, _ := auth.TOTPCodeAt(u.TOTPSecret, time.Now())
 	post(t, c, ts, "/account", url.Values{"action": {"disable"}, "code": {good}}).Body.Close()
 	if u, _ := st.GetUserByID(uid); !u.TOTPEnabled {

@@ -1,4 +1,4 @@
-# Egret Nest Dashboard — Helm values.
+# Egret Nest Dashboard - Helm values.
 
 image:
   # GHCR is auto-published + SLSA-signed by the release workflow. Docker Hub mirror:
@@ -35,7 +35,7 @@ ingress:
 persistence:
   enabled: true
   size: 1Gi
-  # "" = cluster default. Use BLOCK storage (EBS/PD/local-path) — NOT NFS/CephFS:
+  # "" = cluster default. Use BLOCK storage (EBS/PD/local-path) - NOT NFS/CephFS:
   # SQLite is a single writer and file locking over NFS is unreliable.
   storageClass: ""
   accessMode: ReadWriteOnce
@@ -64,7 +64,7 @@ config:
 # existingSecret at a Secret you manage (with the same EGRET_NEST_* keys).
 existingSecret: ""
 secrets:
-  secretKey: ""             # EGRET_NEST_SECRET_KEY (32-byte hex/base64) — TOTP at-rest
+  secretKey: ""             # EGRET_NEST_SECRET_KEY (32-byte hex/base64) - TOTP at-rest
   webhookSecret: ""         # EGRET_NEST_WEBHOOK_SECRET
   metricsToken: ""          # EGRET_NEST_METRICS_TOKEN (>= 32 chars)
   githubClientSecret: ""    # EGRET_NEST_GITHUB_CLIENT_SECRET
@@ -85,7 +85,7 @@ securityContext:
   capabilities:
     drop: ["ALL"]
 
-# Default-deny NetworkPolicy (opt-in — needs a CNI that enforces them). When
+# Default-deny NetworkPolicy (opt-in - needs a CNI that enforces them). When
 # enabled, only HTTP ingress + DNS/HTTPS egress are allowed; narrow further with
 # ingressFrom / egressTo peer selectors.
 networkPolicy:

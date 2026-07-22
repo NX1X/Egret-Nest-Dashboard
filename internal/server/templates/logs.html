@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — logs</title>
+<title>{{.Instance}} - logs</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— request logs</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- request logs</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -21,7 +21,7 @@
   {{template "topnav" .}}
 
   <p class="note">The most recent HTTP requests this server handled (in-memory,
-    newest first — cleared on restart). This is the live access log of activity on
+    newest first - cleared on restart). This is the live access log of activity on
     the dashboard.</p>
   {{if .Entries}}
   <table>
@@ -35,7 +35,7 @@
         <td>{{if ge .Status 500}}<span class="viol">{{.Status}}</span>{{else if ge .Status 400}}<span class="new">{{.Status}}</span>{{else}}<span class="ok">{{.Status}}</span>{{end}}</td>
         <td class="muted">{{.DurMS}}</td>
         <td class="muted">{{.IP}}</td>
-        <td>{{if .User}}{{.User}}{{else}}<span class="muted">—</span>{{end}}</td>
+        <td>{{if .User}}{{.User}}{{else}}<span class="muted">-</span>{{end}}</td>
       </tr>
       {{end}}
     </tbody>

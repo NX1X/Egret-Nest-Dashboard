@@ -1,6 +1,6 @@
 apiVersion: v2
 name: egret-nest
-description: Egret Nest Dashboard — self-hosted CI/CD egress telemetry (single static Go binary, embedded SQLite).
+description: Egret Nest Dashboard - self-hosted CI/CD egress telemetry (single static Go binary, embedded SQLite).
 type: application
 version: 0.1.0
 appVersion: "0.1.0"

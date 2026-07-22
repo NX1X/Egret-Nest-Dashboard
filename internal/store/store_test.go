@@ -191,7 +191,7 @@ func TestCrossTenantEndpointIsolation(t *testing.T) {
 }
 
 // A database created before N4 (no runs.num_new_endpoints, no endpoints_seen.org_id)
-// must upgrade cleanly on Open — otherwise the next ingest would fail.
+// must upgrade cleanly on Open - otherwise the next ingest would fail.
 func TestSchemaMigrationFromPreN4(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "old.db")
 	raw, err := sql.Open("sqlite", path)

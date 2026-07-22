@@ -159,8 +159,8 @@ func (g *githubOAuth) isOrgMember(ctx context.Context, token string) (bool, erro
 
 // --- handlers ---
 
-// oauthRedirectURI is derived solely from the configured BaseURL — never from the
-// request Host header — so a spoofed Host can't redirect the code/token. New()
+// oauthRedirectURI is derived solely from the configured BaseURL - never from the
+// request Host header - so a spoofed Host can't redirect the code/token. New()
 // requires BaseURL whenever OAuth is enabled.
 func (s *Server) oauthRedirectURI() string {
 	return strings.TrimRight(s.cfg.BaseURL, "/") + "/auth/github/callback"

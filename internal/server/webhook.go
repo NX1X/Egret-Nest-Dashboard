@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const maxWebhookBytes = 1 << 20 // 1 MiB — GitHub webhook payloads are small.
+const maxWebhookBytes = 1 << 20 // 1 MiB - GitHub webhook payloads are small.
 
 // handleGitHubWebhook receives GitHub webhook deliveries. Every delivery is
 // verified by HMAC-SHA256 over the RAW request body against the configured
@@ -25,7 +25,7 @@ func (s *Server) handleGitHubWebhook(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	// Bound and read the raw body BEFORE verifying — the signature is over the
+	// Bound and read the raw body BEFORE verifying - the signature is over the
 	// exact bytes GitHub sent, so we must not decode/re-encode first.
 	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxWebhookBytes))
 	if err != nil {
@@ -62,7 +62,7 @@ func (s *Server) handleGitHubWebhook(w http.ResponseWriter, r *http.Request) {
 		// scoped token; artifact-pull-on-webhook is a tracked follow-up.)
 		writeJSON(w, http.StatusAccepted, map[string]any{"ok": true, "repository": repo})
 	default:
-		// Verified but unhandled event — acknowledge so GitHub doesn't retry.
+		// Verified but unhandled event - acknowledge so GitHub doesn't retry.
 		writeJSON(w, http.StatusAccepted, map[string]any{"ok": true, "ignored": event})
 	}
 }

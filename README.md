@@ -7,7 +7,7 @@
 > The **optional**, self-hosted dashboard for [Egret](https://github.com/NX1X/Egret).
 > It ingests Egret run reports and shows what your CI jobs connected to, what was
 > flagged/blocked, and which endpoints are new. Your data stays on **your**
-> infrastructure — Egret never runs a central server.
+> infrastructure - Egret never runs a central server.
 
 [![CI](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml)
 [![Security](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml)
@@ -58,7 +58,7 @@ webhook/metrics tokens, retention, setup token) is in [docs/DEPLOY.md](docs/DEPL
 | `EGRET_NEST_INSTANCE` | `Egret Nest` | display name (also GUI-editable) |
 
 Auth providers (GitHub/OIDC) are configured via `EGRET_NEST_GITHUB_*` / `_OIDC_*`
-**or** the admin **Authentication** page — see [docs/AUTH.md](docs/AUTH.md).
+**or** the admin **Authentication** page - see [docs/AUTH.md](docs/AUTH.md).
 
 ---
 
@@ -73,7 +73,7 @@ env:
 ```
 
 The agent POSTs an **Envelope** (`schema_version: 1`) after each run. That's the
-only coupling — see the
+only coupling - see the
 [ingest contract](https://github.com/NX1X/Egret/blob/main/docs/ingest-contract.md).
 
 ---
@@ -112,7 +112,7 @@ the standard library, pure-Go only (no CGO), no npm build chain.
 **Tagged `v0.1.0`** (feature-complete, security-reviewed). Shipped: ingest + drift
 views, the full auth trilogy (local+TOTP / GitHub / OIDC) with org RBAC, sessions/CSRF,
 scoped ingest tokens + HMAC webhooks, the admin console (incl. UI SSO config), native
-TLS, packaging (Docker/compose/Helm), and a visual identity pass — all
+TLS, packaging (Docker/compose/Helm), and a visual identity pass - all
 security-reviewed.
 
 For details, see the **docs map** below. Current status and future direction live in
@@ -122,7 +122,7 @@ For details, see the **docs map** below. Current status and future direction liv
 
 | Doc | Owns |
 |---|---|
-| [CHANGELOG.md](CHANGELOG.md) | Released changes (`[0.1.0]`) — the feature history |
+| [CHANGELOG.md](CHANGELOG.md) | Released changes (`[0.1.0]`) - the feature history |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Current status + what's planned |
 | [docs/AUTH.md](docs/AUTH.md) | Authoritative auth & security design |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Deploy guide + full env reference |
@@ -138,6 +138,6 @@ For details, see the **docs map** below. Current status and future direction liv
 
 ## License
 
-Egret Nest Dashboard is licensed under the [Apache License 2.0](LICENSE) —
+Egret Nest Dashboard is licensed under the [Apache License 2.0](LICENSE) -
 © 2026 NX1X ([nx1xlab.dev](https://nx1xlab.dev)). See [NOTICE](NOTICE) for
 attribution and bundled-component licenses.

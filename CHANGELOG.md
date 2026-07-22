@@ -4,11 +4,11 @@ Notable changes to Egret Nest Dashboard, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] — first release
+## [0.1.0] - first release
 
 The optional self-hosted dashboard for Egret: ingest CI/CD runs and view egress
 over time, endpoint drift, and violations across your fleet, with multi-tenant
-access control. Ships as a single Go binary with embedded SQLite — no external
+access control. Ships as a single Go binary with embedded SQLite - no external
 services required.
 
 ### Added
@@ -16,7 +16,7 @@ services required.
 - **Run ingest + history.** The Egret agent/Action POSTs each run; stored in
   embedded SQLite. Run list/detail, per-repo egress-over-time, org **fleet** view,
   and **new-endpoint drift** (inline-SVG sparklines, no JavaScript).
-- **Authentication — one core, three providers.** Local accounts (argon2id) with
+- **Authentication - one core, three providers.** Local accounts (argon2id) with
   self-service **TOTP 2FA**, **GitHub OAuth**, and generic **OIDC** (Okta / Entra /
   Google), configurable via env or an admin UI (client secrets encrypted at rest,
   env always wins).

@@ -49,7 +49,7 @@ var ErrNoSecretKey = errors.New("store: EGRET_NEST_SECRET_KEY must be set to sto
 func (s *Store) SecretsEnabled() bool { return s.enc != nil }
 
 // SealSecret returns the encrypted (enc:v1:) form of a secret bound to its key,
-// WITHOUT writing it — the caller includes the result in a WriteSettingsTx batch.
+// WITHOUT writing it - the caller includes the result in a WriteSettingsTx batch.
 // It refuses when no encryption key is configured (secrets are never stored
 // plaintext). An empty plaintext returns "" (caller deletes the row).
 func (s *Store) SealSecret(key, plaintext string) (string, error) {
@@ -64,7 +64,7 @@ func (s *Store) SealSecret(key, plaintext string) (string, error) {
 
 // GetSecretSetting returns the decrypted secret, or "" when unset. It uses STRICT
 // decryption: a stored value that isn't a proper sealed secret is rejected (these
-// keys are always encrypted — there is no legacy-plaintext state to support), so a
+// keys are always encrypted - there is no legacy-plaintext state to support), so a
 // plaintext value injected by another path can't be accepted as a live secret.
 func (s *Store) GetSecretSetting(key string) (string, error) {
 	v, err := s.GetSetting(key)
@@ -105,7 +105,7 @@ func (s *Store) WriteSettings(kv map[string]string) error {
 }
 
 // HasSetting reports whether a (non-empty) setting exists, without returning its
-// value — used to show a "secret is set" indicator without exposing it.
+// value - used to show a "secret is set" indicator without exposing it.
 func (s *Store) HasSetting(key string) (bool, error) {
 	v, err := s.GetSetting(key)
 	return v != "", err
@@ -153,7 +153,7 @@ type MembershipView struct {
 }
 
 // ListUsers returns all users (newest first) each with their org memberships. The
-// admin Users page uses this to grant/revoke access — SSO users are provisioned
+// admin Users page uses this to grant/revoke access - SSO users are provisioned
 // with NO membership and see nothing until an admin assigns them here.
 func (s *Store) ListUsers() ([]UserListItem, error) {
 	rows, err := s.db.Query(`SELECT id, login, email, is_admin, COALESCE(external_id,'') FROM users ORDER BY id DESC LIMIT 500`)
@@ -220,7 +220,7 @@ func (s *Store) RemoveMembership(orgID, userID int64) error {
 	return err
 }
 
-// TokenListItem is a token row for the management UI — never includes the hash
+// TokenListItem is a token row for the management UI - never includes the hash
 // or the plaintext token (which is shown once, at creation, and never stored).
 type TokenListItem struct {
 	ID         int64

@@ -6,7 +6,7 @@ import (
 )
 
 // failLimiter throttles repeated authentication failures per key (IP|login). It
-// counts only failures; a successful login resets the key. Purely in-memory —
+// counts only failures; a successful login resets the key. Purely in-memory -
 // adequate for a single self-hosted instance.
 type failLimiter struct {
 	mu      sync.Mutex

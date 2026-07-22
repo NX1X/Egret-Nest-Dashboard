@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — run #{{.Run.ID}}</title>
+<title>{{.Instance}} - run #{{.Run.ID}}</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
@@ -14,7 +14,7 @@
   <p class="meta">
     commit <code>{{short .Run.SHA}}</code> · mode <b>{{.Run.Mode}}</b> ·
     exit {{.Run.ExitCode}} · workflow {{.Run.Workflow}} ·
-    by {{if .Run.Actor}}{{.Run.Actor}}{{else}}—{{end}} ·
+    by {{if .Run.Actor}}{{.Run.Actor}}{{else}}-{{end}} ·
     received {{ftime .Run.ReceivedAt}}
   </p>
 

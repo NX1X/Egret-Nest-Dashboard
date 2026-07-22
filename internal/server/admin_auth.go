@@ -177,7 +177,7 @@ func (s *Server) handleAuthConfigPost(w http.ResponseWriter, r *http.Request) {
 // secret, then rebuilds ONLY the affected provider via reload. If the rebuild
 // fails (e.g. a bad OIDC issuer), it rolls the stored config back to its previous
 // values and reloads again, so the live provider and the DB stay consistent. The
-// caller holds s.authMu. reload must rebuild only the one provider being changed —
+// caller holds s.authMu. reload must rebuild only the one provider being changed -
 // so a GitHub change is never blocked by OIDC discovery health, and vice-versa.
 func (s *Server) saveProvider(reload func() error, settings map[string]string, secretKey, secretVal string) error {
 	// Snapshot the prior raw stored values (secret stays as ciphertext) for rollback.
@@ -238,7 +238,7 @@ func (s *Server) clearProvider(reload func() error, keys ...string) error {
 
 // saveErrMessage maps internal errors to a safe, actionable UI message. It NEVER
 // reflects a raw upstream error (OIDC discovery errors can echo internal response
-// bodies — an SSRF oracle); the real error is logged server-side by the caller.
+// bodies - an SSRF oracle); the real error is logged server-side by the caller.
 func saveErrMessage(err error) string {
 	switch {
 	case errors.Is(err, store.ErrNoSecretKey):
@@ -248,10 +248,10 @@ func saveErrMessage(err error) string {
 	case errors.Is(err, errIssuerScheme):
 		return "The OIDC issuer URL must start with https://."
 	case errors.Is(err, errIssuerNoHost):
-		return "Couldn't resolve the OIDC issuer host — check the URL."
+		return "Couldn't resolve the OIDC issuer host - check the URL."
 	case errors.Is(err, errIssuerBlocked):
 		return "The OIDC issuer resolves to an internal/loopback address, which isn't allowed."
 	default:
-		return "Couldn't enable that provider — check the issuer is a reachable OIDC endpoint over https."
+		return "Couldn't enable that provider - check the issuer is a reachable OIDC endpoint over https."
 	}
 }

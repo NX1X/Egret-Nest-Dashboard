@@ -24,19 +24,19 @@ Please include:
 - Affected version (release tag / image digest, or commit).
 - How you're running it (binary / container / source) and relevant config
   (`EGRET_NEST_TOKEN` set or open, reverse proxy, TLS termination).
-- A minimal reproduction — e.g. the request sequence, with tokens and any
+- A minimal reproduction - e.g. the request sequence, with tokens and any
   ingested data redacted.
 - The impact you believe it has.
 
 ## High-value classes for this project
 
-- **Auth bypass on `/ingest`** — posting a report without the configured
+- **Auth bypass on `/ingest`** - posting a report without the configured
   bearer token, or a timing side-channel in token comparison.
-- **Stored XSS** — an ingested report field rendered without escaping.
+- **Stored XSS** - an ingested report field rendered without escaping.
 - **SQL injection / cross-instance data access** in the store.
-- **Data exposure** — reports or tokens leaking via logs, error messages, or
+- **Data exposure** - reports or tokens leaking via logs, error messages, or
   an unauthenticated endpoint.
-- **Resource exhaustion** — an ingest payload that exhausts memory/disk past
+- **Resource exhaustion** - an ingest payload that exhausts memory/disk past
   the documented limits.
 - **Container escape / privilege** issues in the shipped image.
 

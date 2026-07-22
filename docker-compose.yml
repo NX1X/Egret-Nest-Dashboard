@@ -1,4 +1,4 @@
-# Egret Nest Dashboard — self-hosted deployment.
+# Egret Nest Dashboard - self-hosted deployment.
 #
 #   docker compose up -d                 # dashboard on http://localhost:8080
 #   docker compose --profile tls up -d   # + nginx TLS reverse proxy on :443
@@ -30,7 +30,7 @@ services:
       EGRET_NEST_WEBHOOK_SECRET: ${EGRET_NEST_WEBHOOK_SECRET:-}
       EGRET_NEST_METRICS_TOKEN: ${EGRET_NEST_METRICS_TOKEN:-}
       EGRET_NEST_RETENTION_DAYS: ${EGRET_NEST_RETENTION_DAYS:-0}
-      # SSO (optional) — see docs/AUTH.md.
+      # SSO (optional) - see docs/AUTH.md.
       EGRET_NEST_GITHUB_CLIENT_ID: ${EGRET_NEST_GITHUB_CLIENT_ID:-}
       EGRET_NEST_GITHUB_CLIENT_SECRET: ${EGRET_NEST_GITHUB_CLIENT_SECRET:-}
       EGRET_NEST_GITHUB_ALLOWED_ORG: ${EGRET_NEST_GITHUB_ALLOWED_ORG:-}
@@ -55,7 +55,7 @@ services:
           cpus: "1.0"
           memory: 256M
     healthcheck:
-      # In-process GET /healthz (distroless has no shell/curl) — actually exercises
+      # In-process GET /healthz (distroless has no shell/curl) - actually exercises
       # the HTTP server, unlike `version` which only prints a string.
       test: ["CMD", "/egret-nest", "healthcheck"]
       interval: 30s

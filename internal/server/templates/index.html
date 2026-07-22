@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — runs</title>
+<title>{{.Instance}} - runs</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— recent runs</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- recent runs</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -28,12 +28,12 @@
       {{range .Runs}}
       <tr>
         <td><a href="/runs/{{.ID}}">{{.ID}}</a></td>
-        <td>{{if .Repository}}<a href="/repos/{{.Repository}}">{{.Repository}}</a>{{else}}<span class="muted">—</span>{{end}}</td>
+        <td>{{if .Repository}}<a href="/repos/{{.Repository}}">{{.Repository}}</a>{{else}}<span class="muted">-</span>{{end}}</td>
         <td><code>{{short .SHA}}</code></td>
         <td>{{.Mode}}</td>
         <td>{{.NumConnections}}</td>
         <td>{{if .NumViolations}}<span class="viol">{{.NumViolations}}</span>{{else}}<span class="ok">0</span>{{end}}</td>
-        <td>{{if .NumNewEndpoints}}<span class="new" title="endpoints seen for the first time">+{{.NumNewEndpoints}}</span>{{else}}<span class="muted">—</span>{{end}}</td>
+        <td>{{if .NumNewEndpoints}}<span class="new" title="endpoints seen for the first time">+{{.NumNewEndpoints}}</span>{{else}}<span class="muted">-</span>{{end}}</td>
         <td class="muted">{{ftime .ReceivedAt}}</td>
       </tr>
       {{end}}

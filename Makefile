@@ -1,4 +1,4 @@
-# Egret Nest Dashboard — build & dev tasks. Pure Go, no CGO, no kernel.
+# Egret Nest Dashboard - build & dev tasks. Pure Go, no CGO, no kernel.
 
 BINARY  := egret-nest
 CMD     := ./cmd/egret-nest

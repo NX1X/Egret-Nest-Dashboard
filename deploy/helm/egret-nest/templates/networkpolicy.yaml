@@ -25,7 +25,7 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
-    # HTTPS out — for SSO (GitHub/OIDC) and webhook verification. Tighten to
+    # HTTPS out - for SSO (GitHub/OIDC) and webhook verification. Tighten to
     # specific CIDRs via networkPolicy.egressTo if your IdP endpoints are fixed.
     - ports:
         - port: 443

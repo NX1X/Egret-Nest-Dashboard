@@ -6,7 +6,7 @@ Egret Nest Dashboard is installed as "{{ .Release.Name }}".
      helm upgrade {{ .Release.Name }} . --set secrets.secretKey=$(openssl rand -hex 32)
 {{ end -}}
 {{ if not .Values.config.baseURL -}}
-⚠  config.baseURL is empty — required for SSO redirects and Secure/__Host- cookies
+⚠  config.baseURL is empty - required for SSO redirects and Secure/__Host- cookies
    when behind an ingress. Set it to your external https:// URL.
 {{ end }}
 Access:

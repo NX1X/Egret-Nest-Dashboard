@@ -1,6 +1,6 @@
 # Contributing to Egret Nest Dashboard
 
-Thanks for helping build Egret Nest — the self-hosted dashboard for Egret. A
+Thanks for helping build Egret Nest - the self-hosted dashboard for Egret. A
 few things are stricter than a typical repo, mostly around the ingest boundary,
 the data store, and the deliberately small dependency surface.
 
@@ -9,7 +9,7 @@ the data store, and the deliberately small dependency surface.
 - Read the auth & security design in [docs/AUTH.md](docs/AUTH.md) first.
 - Keep PRs small and focused. One concern per PR.
 - Every user-facing change updates [CHANGELOG.md](CHANGELOG.md).
-- Be excellent to each other — see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+- Be excellent to each other - see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Design constraints (please respect them)
 
@@ -20,7 +20,7 @@ the data store, and the deliberately small dependency surface.
 - **Env-only config.** `EGRET_NEST_ADDR`, `EGRET_NEST_DB`, `EGRET_NEST_TOKEN`,
   `EGRET_NEST_INSTANCE`. No config files, no flags for secrets.
 
-Adding a dependency is a real decision — justify it in
+Adding a dependency is a real decision - justify it in
 [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) (permissive-licensed only, minimal
 surface, pinned + verified).
 

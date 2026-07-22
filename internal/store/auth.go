@@ -10,7 +10,7 @@ import (
 )
 
 // migrateAuth creates the identity/authz/audit tables. All parameterized queries
-// go through database/sql placeholders — no string-built SQL
+// go through database/sql placeholders - no string-built SQL
 func (s *Store) migrateAuth() error {
 	const schema = `
 CREATE TABLE IF NOT EXISTS users (
@@ -197,7 +197,7 @@ func (s *Store) BootstrapAdmin(login, passwordHash string) (id int64, ok bool, e
 		return 0, false, err
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
-		return 0, false, nil // already bootstrapped — lose the race, fail closed
+		return 0, false, nil // already bootstrapped - lose the race, fail closed
 	}
 
 	now := rfc3339(time.Now().UTC())
@@ -378,7 +378,7 @@ func (s *Store) RevokeIngestToken(id int64) error {
 }
 
 // ClaimTOTPCode atomically marks a (user, time-counter) pair as consumed. It
-// returns true if the code was newly claimed, false if it was already used —
+// returns true if the code was newly claimed, false if it was already used -
 // which is a replay and must be rejected. INSERT OR IGNORE makes the check and
 // the claim a single atomic step.
 func (s *Store) ClaimTOTPCode(userID, counter int64) (bool, error) {

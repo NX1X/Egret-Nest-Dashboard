@@ -140,7 +140,7 @@ jobs:
           persist-credentials: false
 
       # Build the actual runtime image so the scan covers the distroless base
-      # layer AND the compiled binary's module set — not just the source tree.
+      # layer AND the compiled binary's module set - not just the source tree.
       - name: Build image
         run: docker build -t egret-nest:scan .
 

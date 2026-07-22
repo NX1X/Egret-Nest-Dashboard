@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — authentication</title>
+<title>{{.Instance}} - authentication</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— authentication</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- authentication</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -28,11 +28,11 @@
 
   {{if not .CanStoreSecrets}}
   <p class="warn">Set <code>EGRET_NEST_SECRET_KEY</code> (32-byte hex/base64) and restart
-    to store provider secrets in the UI — otherwise use environment variables.</p>
+    to store provider secrets in the UI - otherwise use environment variables.</p>
   {{end}}
   {{if not .BaseURLSet}}
   <p class="warn">Set <code>EGRET_NEST_BASE_URL</code> to your dashboard's public URL and
-    restart before enabling SSO — the OAuth/OIDC redirect must use a trusted base URL.</p>
+    restart before enabling SSO - the OAuth/OIDC redirect must use a trusted base URL.</p>
   {{end}}
 
   <!-- GitHub OAuth -->
@@ -43,7 +43,7 @@
       {{else}}<span class="pill off">off</span>{{end}}
     </h2>
     {{if .GHEnv}}
-    <p class="note">Managed by <code>EGRET_NEST_GITHUB_*</code> environment variables —
+    <p class="note">Managed by <code>EGRET_NEST_GITHUB_*</code> environment variables -
       edit those and restart. UI editing is disabled while env config is present.</p>
     {{else}}
     <p class="note">Redirect/callback URL to register in your GitHub App/OAuth app:
@@ -56,11 +56,11 @@
         <input id="gh_id" name="client_id" value="{{.GHClientID}}" maxlength="200" autocomplete="off">
       </div>
       <div class="field">
-        <label for="gh_secret">Client Secret {{if .GHSecretSet}}<span class="pill on">set</span> — leave blank to keep{{else}}<span class="pill off">not set</span>{{end}}</label>
+        <label for="gh_secret">Client Secret {{if .GHSecretSet}}<span class="pill on">set</span> - leave blank to keep{{else}}<span class="pill off">not set</span>{{end}}</label>
         <input id="gh_secret" name="client_secret" type="password" maxlength="400" autocomplete="new-password" placeholder="{{if .GHSecretSet}}••••••••{{else}}client secret{{end}}">
       </div>
       <div class="field">
-        <label for="gh_org">Allowed org (optional — only members of this GitHub org may sign in)</label>
+        <label for="gh_org">Allowed org (optional - only members of this GitHub org may sign in)</label>
         <input id="gh_org" name="allowed_org" value="{{.GHAllowedOrg}}" maxlength="100" autocomplete="off" placeholder="acme-inc">
       </div>
       <button type="submit" class="inline-btn">Save GitHub login</button>
@@ -83,7 +83,7 @@
       {{else}}<span class="pill off">off</span>{{end}}
     </h2>
     {{if .OIDCEnv}}
-    <p class="note">Managed by <code>EGRET_NEST_OIDC_*</code> environment variables —
+    <p class="note">Managed by <code>EGRET_NEST_OIDC_*</code> environment variables -
       edit those and restart.</p>
     {{else}}
     <p class="note">Redirect/callback URL to register with your IdP:
@@ -100,7 +100,7 @@
         <input id="oi_id" name="client_id" value="{{.OIDCClientID}}" maxlength="200" autocomplete="off">
       </div>
       <div class="field">
-        <label for="oi_secret">Client Secret {{if .OIDCSecretSet}}<span class="pill on">set</span> — leave blank to keep{{else}}<span class="pill off">not set</span>{{end}}</label>
+        <label for="oi_secret">Client Secret {{if .OIDCSecretSet}}<span class="pill on">set</span> - leave blank to keep{{else}}<span class="pill off">not set</span>{{end}}</label>
         <input id="oi_secret" name="client_secret" type="password" maxlength="400" autocomplete="new-password" placeholder="{{if .OIDCSecretSet}}••••••••{{else}}client secret{{end}}">
       </div>
       <div class="field">
@@ -108,7 +108,7 @@
         <input id="oi_name" name="name" value="{{.OIDCName}}" maxlength="40" autocomplete="off" placeholder="SSO">
       </div>
       <div class="field">
-        <label for="oi_domain">Allowed email domain (optional — only verified emails at this domain)</label>
+        <label for="oi_domain">Allowed email domain (optional - only verified emails at this domain)</label>
         <input id="oi_domain" name="allowed_domain" value="{{.OIDCDomain}}" maxlength="100" autocomplete="off" placeholder="example.com">
       </div>
       <button type="submit" class="inline-btn">Save OIDC login</button>
@@ -123,7 +123,7 @@
     {{end}}
   </div>
 
-  <p class="note">SSO authenticates identity only — a new SSO user gets <b>no access</b>
+  <p class="note">SSO authenticates identity only - a new SSO user gets <b>no access</b>
     until an admin grants an org on <a href="/admin/users">Users</a> (fail-closed).</p>
 
   {{template "ghfooter"}}

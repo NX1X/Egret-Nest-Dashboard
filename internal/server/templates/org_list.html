@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — organizations</title>
+<title>{{.Instance}} - organizations</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— organizations</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- organizations</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -21,7 +21,7 @@
   {{template "topnav" .}}
 
   <p class="note">Organizations you can manage. An org owner or admin manages that
-    org's members and ingest tokens here — no instance-admin access required.</p>
+    org's members and ingest tokens here - no instance-admin access required.</p>
 
   {{if .Orgs}}
   <div class="grid">

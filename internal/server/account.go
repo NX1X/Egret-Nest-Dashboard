@@ -14,12 +14,12 @@ import (
 // owns MFA, so TOTP is not offered to them.
 //
 // Enrolment is a two-step, pending-secret flow:
-//   1. "begin"   — generate a secret, store it with totp_enabled=0 (pending). A
+//   1. "begin"   - generate a secret, store it with totp_enabled=0 (pending). A
 //                  pending secret never affects login (login only checks TOTP
 //                  when enabled), so a half-finished enrolment can't lock anyone
 //                  out. The secret is encrypted at rest (AES-GCM, bound to the
 //                  user id).
-//   2. "confirm" — the user proves possession by entering a current code; only
+//   2. "confirm" - the user proves possession by entering a current code; only
 //                  then is totp_enabled flipped to 1.
 // Disabling requires a current code too, so a session-only attacker (who never
 // had the second factor) cannot turn 2FA off.
@@ -84,7 +84,7 @@ func (s *Server) handleAccountPost(w http.ResponseWriter, r *http.Request) {
 	// miss it records a failure. When throttled it returns ok=false and writes the
 	// response, so the caller must just return.
 	// verifyCodeThrottled returns (counter, cont). cont is false when the code was
-	// wrong or the user is rate-limited — in that case it has already written the
+	// wrong or the user is rate-limited - in that case it has already written the
 	// response and the caller must just return.
 	verifyCodeThrottled := func(purpose string) (int64, bool) {
 		key := "totp:" + purpose + "|" + strconv.FormatInt(u.ID, 10)
@@ -154,7 +154,7 @@ func (s *Server) handleAccountPost(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/account", http.StatusSeeOther)
 			return
 		}
-		// Require a current code to disable — a stolen session alone must not be
+		// Require a current code to disable - a stolen session alone must not be
 		// able to strip the second factor.
 		if _, cont := verifyCodeThrottled("disable"); !cont {
 			return

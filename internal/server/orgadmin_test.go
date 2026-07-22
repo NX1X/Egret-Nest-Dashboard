@@ -75,13 +75,13 @@ func TestOrgAdminCannotEscalateAboveSelf(t *testing.T) {
 	_ = target
 	tu, _ := st.GetUserByLogin("victim")
 
-	// Admin tries to grant OWNER — must be refused (can't assign above own role).
+	// Admin tries to grant OWNER - must be refused (can't assign above own role).
 	resp := post(t, admin, ts, "/org/"+i64(acme)+"/members", url.Values{
 		"action": {"add"}, "login": {"victim"}, "role": {"owner"},
 	})
 	resp.Body.Close()
 	if m, _ := st.GetMembership(acme, tu.ID); m != nil {
-		t.Fatalf("admin escalated victim to %s — must have zero membership", m.Role)
+		t.Fatalf("admin escalated victim to %s - must have zero membership", m.Role)
 	}
 
 	// Granting member (<= admin) is allowed.
@@ -107,7 +107,7 @@ func TestLastOwnerGuard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Instance admin tries to revoke the sole owner — refused.
+	// Instance admin tries to revoke the sole owner - refused.
 	resp := post(t, admin, ts, "/org/"+i64(acme)+"/members", url.Values{
 		"action": {"revoke"}, "user_id": {i64(ou.ID)},
 	})
@@ -116,7 +116,7 @@ func TestLastOwnerGuard(t *testing.T) {
 		t.Fatalf("sole owner was removed/changed: %+v", m)
 	}
 
-	// Downgrade the sole owner — also refused.
+	// Downgrade the sole owner - also refused.
 	resp = post(t, admin, ts, "/org/"+i64(acme)+"/members", url.Values{
 		"action": {"setrole"}, "user_id": {i64(ou.ID)}, "role": {"admin"},
 	})
@@ -140,7 +140,7 @@ func TestLastOwnerGuard(t *testing.T) {
 }
 
 // TestAddCannotOrphanLastOwner is the regression test for the appsec/pentest
-// finding: the "add" (upsert) action must honour the last-owner guard too — a
+// finding: the "add" (upsert) action must honour the last-owner guard too - a
 // sole owner cannot demote themselves (or a co-owner down to zero owners) through
 // the "Add / update a member" form, only through setrole/revoke.
 func TestAddCannotOrphanLastOwner(t *testing.T) {
@@ -149,7 +149,7 @@ func TestAddCannotOrphanLastOwner(t *testing.T) {
 	acme, _ := st.CreateOrg("acme")
 	owner, ownerID := memberClientWithRole(t, ts, st, "soleowner", acme, model.RoleOwner)
 
-	// Sole owner tries to demote THEMSELVES to member via action=add — must fail.
+	// Sole owner tries to demote THEMSELVES to member via action=add - must fail.
 	resp := post(t, owner, ts, "/org/"+i64(acme)+"/members", url.Values{
 		"action": {"add"}, "login": {"soleowner"}, "role": {"member"},
 	})
@@ -187,7 +187,7 @@ func TestCrossOrgTokenRevokeBlocked(t *testing.T) {
 	}
 	admin, _ := memberClientWithRole(t, ts, st, "orgadmin", acme, model.RoleAdmin)
 
-	// acme admin tries to revoke other's token by id — must be a no-op.
+	// acme admin tries to revoke other's token by id - must be a no-op.
 	resp := post(t, admin, ts, "/org/"+i64(acme)+"/tokens", url.Values{
 		"action": {"revoke"}, "id": {i64(otherTok)},
 	})

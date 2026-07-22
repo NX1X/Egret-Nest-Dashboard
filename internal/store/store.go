@@ -1,5 +1,5 @@
 // Package store persists ingested runs in SQLite (pure-Go modernc.org/sqlite,
-// no CGO — keeps the dashboard a single static binary). A run is stored as
+// no CGO - keeps the dashboard a single static binary). A run is stored as
 // summary columns for listing plus the full session JSON for the detail view;
 // observed endpoints are tracked per-repo for allowlist drift.
 package store
@@ -28,7 +28,7 @@ type Store struct {
 
 // UseSecretBox enables AES-256-GCM encryption of TOTP secrets at rest. Call once
 // after Open, before serving. A nil box (no key configured) leaves seeds in
-// plaintext — the caller warns on startup.
+// plaintext - the caller warns on startup.
 func (s *Store) UseSecretBox(b *auth.SecretBox) { s.enc = b }
 
 // encTOTP/decTOTP transparently seal/open the TOTP seed when a box is configured.
@@ -68,7 +68,7 @@ func Open(path string) (*Store, error) {
 		return nil, fmt.Errorf("pinging sqlite: %w", err)
 	}
 	// The live DB holds password/session/token hashes, audit PII, and (without a
-	// key) plaintext TOTP seeds — restrict it to the owner rather than trusting
+	// key) plaintext TOTP seeds - restrict it to the owner rather than trusting
 	// the process umask. Best-effort: a real file only (":memory:" has no path).
 	if path != ":memory:" && path != "" {
 		if err := os.Chmod(path, 0o600); err != nil && !os.IsNotExist(err) {
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS endpoints_seen (
 }
 
 // migrateSchema brings a pre-existing database up to the current schema with
-// idempotent ALTERs — `CREATE TABLE IF NOT EXISTS` does NOT add columns to an
+// idempotent ALTERs - `CREATE TABLE IF NOT EXISTS` does NOT add columns to an
 // existing table, so column additions must be applied explicitly here.
 func (s *Store) migrateSchema() error {
 	// N4: per-run drift count.
@@ -329,7 +329,7 @@ func upsertEndpoint(tx *sql.Tx, orgID int64, repo, endpoint string, now time.Tim
 const runSummaryCols = `id, received_at, repository, sha, ref, mode, num_connections, num_violations, num_new_endpoints`
 
 // orgScope returns a WHERE clause (empty for admins) plus args that restrict rows
-// to organizations the viewer belongs to — the query-layer authz boundary.
+// to organizations the viewer belongs to - the query-layer authz boundary.
 func orgScope(viewerID int64, isAdmin bool) (string, []any) {
 	if isAdmin {
 		return "", nil
@@ -463,7 +463,7 @@ GROUP BY endpoint ORDER BY MAX(last_seen) DESC`, args...)
 }
 
 // GetRun returns a run visible to the viewer, or (nil, nil) if absent OR not
-// authorized — returning "not found" for both avoids confirming the existence of
+// authorized - returning "not found" for both avoids confirming the existence of
 // a run in another organization (no IDOR, no enumeration oracle).
 func (s *Store) GetRun(id, viewerID int64, isAdmin bool) (*Run, error) {
 	var r Run
@@ -567,7 +567,7 @@ func (s *Store) Snapshot() (Metrics, error) {
 // as a bound parameter, so it is not string-concatenated into SQL.
 //
 // The copy carries the full secrets-bearing schema (password/session/token
-// hashes and TOTP seeds), so it is chmod'd to 0600 — don't rely on umask for a
+// hashes and TOTP seeds), so it is chmod'd to 0600 - don't rely on umask for a
 // credential-bearing file.
 func (s *Store) Backup(dest string) error {
 	if _, err := s.db.Exec(`VACUUM INTO ?`, dest); err != nil {

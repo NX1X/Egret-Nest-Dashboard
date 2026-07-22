@@ -1,5 +1,5 @@
 // Package server exposes the ingest API and the web dashboard over stdlib
-// net/http (Go 1.22 routing). No third-party web framework — per the dependency
+// net/http (Go 1.22 routing). No third-party web framework - per the dependency
 // policy, the standard library is enough.
 package server
 
@@ -60,7 +60,7 @@ type Config struct {
 	WebhookSecret string
 
 	// One-time first-run setup token. If empty and the instance is un-bootstrapped,
-	// New generates one and logs it — so /setup can't be claimed by whoever reaches
+	// New generates one and logs it - so /setup can't be claimed by whoever reaches
 	// it first. Tests set a known value.
 	SetupToken string
 }
@@ -97,7 +97,7 @@ func New(st *store.Store, cfg Config) (*Server, error) {
 		"spark": sparkBars,
 		"ftime": func(t time.Time) string {
 			if t.IsZero() {
-				return "—"
+				return "-"
 			}
 			return t.Format("2006-01-02 15:04:05 MST")
 		},
@@ -170,7 +170,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /account", s.requireAuth(s.handleAccount))
 	mux.HandleFunc("POST /account", s.requireAuth(s.handleAccountPost))
 	// Org self-service management (org owner/admin, or instance admin). The picker
-	// is open to any authenticated user (it just lists the orgs they can manage —
+	// is open to any authenticated user (it just lists the orgs they can manage -
 	// possibly none); the per-org pages are gated by requireOrgManager.
 	mux.HandleFunc("GET /orgs", s.requireAuth(s.handleOrgList))
 	mux.HandleFunc("GET /org/{id}/tokens", s.requireOrgManager(s.handleOrgTokens))
@@ -364,7 +364,7 @@ func bearerToken(r *http.Request) string {
 // ingestAuthorized authorizes an ingest POST. Precedence:
 //  1. a valid, non-revoked scoped token (repo scope, if set, must match);
 //  2. the optional legacy shared token (constant-time);
-//  3. otherwise denied — unless OpenIngest is set AND no shared token is
+//  3. otherwise denied - unless OpenIngest is set AND no shared token is
 //     configured (explicit dev escape hatch only).
 //
 // Returns the org the run should be attributed to and whether the request is
@@ -392,7 +392,7 @@ func (s *Server) render(w http.ResponseWriter, name string, data any) {
 
 // renderStatus renders a template to a buffer first, so a template error yields a
 // clean 500 (no partially-written body) and the status/Content-Type are set once,
-// before the body — avoiding superfluous-WriteHeader bugs.
+// before the body - avoiding superfluous-WriteHeader bugs.
 func (s *Server) renderStatus(w http.ResponseWriter, status int, name string, data any) {
 	var buf bytes.Buffer
 	if err := s.tmpl.ExecuteTemplate(&buf, name, data); err != nil {

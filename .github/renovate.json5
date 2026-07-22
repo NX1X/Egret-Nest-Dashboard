@@ -1,19 +1,19 @@
 {
   // ═══════════════════════════════════════════════════════════════════════════
-  //  RENOVATE CONFIG — Egret Nest Dashboard (Go modules + GitHub Actions + Docker)
+  //  RENOVATE CONFIG - Egret Nest Dashboard (Go modules + GitHub Actions + Docker)
   //  Renovate reads this from .github/renovate.json5 automatically.
   //
   //  SELF-CONTAINED: the dependency policy is inlined here rather than fetched
   //  from a shared preset repo, so Renovate has no external preset dependency.
   //
-  //  Posture: MANUAL MERGE — nothing automerges; every update lands as a PR.
+  //  Posture: MANUAL MERGE - nothing automerges; every update lands as a PR.
   //  14-day supply-chain cooldown, OSV + OpenSSF alerts, SHA/digest-pinned
   //  actions + images, dependency dashboard.
   // ═══════════════════════════════════════════════════════════════════════════
 
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
 
-  // Public Renovate presets only — these always resolve.
+  // Public Renovate presets only - these always resolve.
   "extends": [
     "config:best-practices",
     "security:openssf-scorecard",

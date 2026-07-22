@@ -48,7 +48,7 @@ type oidcProvider struct {
 // guardedOIDCClient returns an HTTP client whose dial refuses any destination
 // that resolves to an internal address (loopback/link-local/private/unspecified).
 // It allows any external host but re-checks the *resolved* IP at dial time, and
-// dials exactly the IP it checked (no separate lookup the kernel could race) — so
+// dials exactly the IP it checked (no separate lookup the kernel could race) - so
 // every OIDC fetch on a UI-configured issuer's behalf is covered: discovery, the
 // JWKS fetch (go-oidc caches this client on the Provider), and the endpoints the
 // discovery document itself declares (token_endpoint, userinfo), which may
@@ -74,7 +74,7 @@ func guardedOIDCClient() *http.Client {
 					// Never dial it. Log it too: an OIDC host resolving to an internal
 					// address (especially alongside external ones) is a signal of a
 					// rebind attempt or a hostile DNS operator probing the guard.
-					log.Printf("egret-nest: WARNING — OIDC host %q resolved to internal address %s; refusing that dial", host, ip)
+					log.Printf("egret-nest: WARNING - OIDC host %q resolved to internal address %s; refusing that dial", host, ip)
 					lastErr = fmt.Errorf("oidc: refusing dial to internal address %s (%s)", ip, host)
 					continue
 				}
@@ -117,7 +117,7 @@ func newOIDCProvider(ctx context.Context, cfg Config, discoveryClient *http.Clie
 		name = "SSO"
 	}
 	if cfg.OIDCAllowedDomain == "" {
-		log.Printf("egret-nest: WARNING — OIDC enabled without EGRET_NEST_OIDC_ALLOWED_DOMAIN; " +
+		log.Printf("egret-nest: WARNING - OIDC enabled without EGRET_NEST_OIDC_ALLOWED_DOMAIN; " +
 			"any account the issuer authenticates will be auto-provisioned")
 	}
 	oc := &oauth2.Config{
@@ -127,8 +127,8 @@ func newOIDCProvider(ctx context.Context, cfg Config, discoveryClient *http.Clie
 		Endpoint:     provider.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "email", "profile"},
 	}
-	// JWKS is fetched by the verifier through provider.client — the SAME dc captured
-	// at NewProvider above — so for a UI issuer the guarded client already covers the
+	// JWKS is fetched by the verifier through provider.client - the SAME dc captured
+	// at NewProvider above - so for a UI issuer the guarded client already covers the
 	// JWKS dial (do NOT switch this to VerifierContext with a different client, or the
 	// internal-IP guard is lost on JWKS). exchangeClient covers the token/userinfo
 	// dials the same way; env issuers keep the default client (operator-trusted).
@@ -254,7 +254,7 @@ func (s *Server) handleOIDCCallback(w http.ResponseWriter, r *http.Request) {
 
 	// Authorization is enforced on EVERY login (not just first provisioning): when
 	// a domain allowlist is configured, the email must be IdP-verified AND match
-	// the domain — so an unverified/spoofed email can't bypass the gate, and a
+	// the domain - so an unverified/spoofed email can't bypass the gate, and a
 	// user later removed from the domain loses access.
 	if od.allowedDomain != "" {
 		if !claims.EmailVerified {
@@ -303,7 +303,7 @@ func (s *Server) provisionOIDCUser(email, subject string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Fail closed: no org membership on provisioning — an instance admin grants
+	// Fail closed: no org membership on provisioning - an instance admin grants
 	// access on /admin/users. The IdP-domain gate is authN, not authZ to telemetry.
 	return s.store.GetUserByID(uid)
 }

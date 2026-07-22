@@ -51,7 +51,7 @@ jobs:
       - name: Validate release tag format
         run: |
           # Reject anything that isn't vMAJOR.MINOR.PATCH before we check out that
-          # ref or spend build minutes — guards a mistyped manual-dispatch input
+          # ref or spend build minutes - guards a mistyped manual-dispatch input
           # (e.g. a branch name) from reaching checkout/build/publish.
           [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "::error::TAG '${TAG}' is not a vMAJOR.MINOR.PATCH release tag."; exit 1; }
@@ -139,7 +139,7 @@ jobs:
       - name: Validate release tag format
         run: |
           # Reject anything that isn't vMAJOR.MINOR.PATCH before we check out that
-          # ref or spend build minutes — guards a mistyped manual-dispatch input
+          # ref or spend build minutes - guards a mistyped manual-dispatch input
           # (e.g. a branch name) from reaching checkout/build/publish.
           [[ "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
             echo "::error::TAG '${TAG}' is not a vMAJOR.MINOR.PATCH release tag."; exit 1; }

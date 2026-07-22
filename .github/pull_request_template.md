@@ -22,7 +22,7 @@ Closes #
 - [ ] New/changed behavior is covered by a test
 - [ ] No secrets, tokens, or ingested payloads committed in code, logs, or fixtures
 
-## Security-sensitive paths (tick if touched — extra review required)
+## Security-sensitive paths (tick if touched - extra review required)
 
 - [ ] `internal/server` `/ingest` or auth path → token handling, size limits, schema validation
 - [ ] `internal/store` → parameterized queries, IDOR, cross-instance isolation

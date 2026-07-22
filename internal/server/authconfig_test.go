@@ -22,7 +22,7 @@ func TestGuardedOIDCClientRefusesInternalIP(t *testing.T) {
 	tr := guardedOIDCClient().Transport.(*http.Transport)
 
 	// A host that resolves to loopback (the cloud-metadata IP and any internal
-	// service resolve the same way) is refused — even though a listener is up.
+	// service resolve the same way) is refused - even though a listener is up.
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -83,7 +83,7 @@ func TestAuthConfigStoresSecretEncrypted(t *testing.T) {
 	if err != nil || got != "s3cr3t-value" {
 		t.Fatalf("decrypt = %q, %v", got, err)
 	}
-	// The provider is now live: the login page (fetched anonymously — a logged-in
+	// The provider is now live: the login page (fetched anonymously - a logged-in
 	// client would be redirected away from the form) offers the GitHub button.
 	anon := &http.Client{}
 	if body := getBody(t, anon, ts.URL+"/login"); !strings.Contains(body, "/auth/github/login") {
@@ -115,7 +115,7 @@ func TestAuthConfigEnvPrecedence(t *testing.T) {
 	defer func() { ts.Close(); st.Close() }()
 	admin := authedClient(t, ts)
 
-	// Attempt to overwrite via UI — must be refused, nothing written to the DB.
+	// Attempt to overwrite via UI - must be refused, nothing written to the DB.
 	resp := post(t, admin, ts, "/admin/auth", url.Values{
 		"action": {"github_save"}, "client_id": {"ui-id"}, "client_secret": {"ui-secret"},
 	})
@@ -203,7 +203,7 @@ func TestGitHubClearActuallyDisables(t *testing.T) {
 
 // TestOIDCSaveBlocksSSRFAndRollsBack: a UI-supplied issuer that resolves to an
 // internal/loopback address is rejected (SSRF guard), and the attempted save is
-// rolled back — nothing is stored and OIDC stays disabled.
+// rolled back - nothing is stored and OIDC stays disabled.
 func TestOIDCSaveBlocksSSRFAndRollsBack(t *testing.T) {
 	ts, st := newAuthCfgServer(t)
 	admin := authedClient(t, ts)

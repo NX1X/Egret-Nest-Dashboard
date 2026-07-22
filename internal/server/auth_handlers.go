@@ -41,10 +41,10 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// One-time setup token (constant-time). Empty means the token was never set,
-	// which only happens if the server minted+logged one — so it's always required.
+	// which only happens if the server minted+logged one - so it's always required.
 	if s.setupToken == "" || !auth.EqualToken(s.setupToken, r.PostFormValue("setup_token")) {
 		s.audit(r, "", "setup.denied", "bad or missing setup token")
-		s.renderSetupError(w, r, "invalid setup token — see the server log at first start")
+		s.renderSetupError(w, r, "invalid setup token - see the server log at first start")
 		return
 	}
 	login := strings.TrimSpace(r.PostFormValue("login"))
@@ -71,7 +71,7 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !ok {
-		// Lost the race — someone bootstrapped concurrently. Fail closed.
+		// Lost the race - someone bootstrapped concurrently. Fail closed.
 		http.Error(w, "setup already completed", http.StatusForbidden)
 		return
 	}
@@ -128,7 +128,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		s.audit(r, login, "login.blocked", "too many failed attempts")
 		s.renderStatus(w, http.StatusTooManyRequests, "login.html", map[string]any{
 			"Instance": s.instanceName(), "CSRF": s.csrfToken(w, r), "GitHub": s.ghOAuth() != nil,
-			"OIDCName": s.oidcName(), "Error": "too many attempts — try again later",
+			"OIDCName": s.oidcName(), "Error": "too many attempts - try again later",
 		})
 		return
 	}
@@ -141,7 +141,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	user, err := s.store.GetUserByLogin(login)
 	if err != nil {
 		// A decrypt failure here (e.g. EGRET_NEST_SECRET_KEY lost/rotated) would
-		// otherwise be an unexplained 500 + total lockout — log it so operators can
+		// otherwise be an unexplained 500 + total lockout - log it so operators can
 		// see the cause. See docs/AUTH.md "TOTP-at-rest key rotation".
 		log.Printf("egret-nest: loading user %q for login: %v", login, err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -205,7 +205,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 
 // startSession mints a fresh random session token, persists its hash, and sets
 // the cookie. Sessions are only ever created here (at successful auth) with a new
-// random id — there is no pre-auth session that gets "upgraded" — so session
+// random id - there is no pre-auth session that gets "upgraded" - so session
 // fixation does not apply. We do not delete the user's other sessions, to allow
 // concurrent devices; "sign out everywhere" (DeleteUserSessions) is a separate
 // explicit action.

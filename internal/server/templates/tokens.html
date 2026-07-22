@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Instance}} — connect a repo</title>
+<title>{{.Instance}} - connect a repo</title>
 <link rel="stylesheet" href="/static/app.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div class="head">
-    <h1>🪶 {{.Instance}} <span class="muted">— connect a repo</span></h1>
+    <h1>🪶 {{.Instance}} <span class="muted">- connect a repo</span></h1>
     {{if .User}}
     <form method="POST" action="/logout" class="inline">
       <input type="hidden" name="_csrf" value="{{.CSRF}}">
@@ -26,7 +26,7 @@
 
   {{if .NewToken}}
   <div class="card">
-    <h2>New ingest token <span class="warn">— shown once</span></h2>
+    <h2>New ingest token <span class="warn">- shown once</span></h2>
     <div class="secretbox">{{.NewToken}}</div>
     <p class="note">Add these to your CI (GitHub Actions secrets, etc.):</p>
     <pre class="snippet">export EGRET_INGEST_URL="{{.IngestURL}}"
@@ -75,7 +75,7 @@ export EGRET_INGEST_TOKEN="{{.NewToken}}"
         </select>
       </div>
       <div class="field">
-        <label for="repository">Repository (optional — <code>owner/name</code>, blank = any repo in the org)</label>
+        <label for="repository">Repository (optional - <code>owner/name</code>, blank = any repo in the org)</label>
         <input id="repository" name="repository" maxlength="140" placeholder="acme/build">
       </div>
       <div class="field">
@@ -97,7 +97,7 @@ export EGRET_INGEST_TOKEN="{{.NewToken}}"
         <tr>
           <td>{{.OrgName}}</td>
           <td>{{if .Repository}}<code>{{.Repository}}</code>{{else}}<span class="muted">any</span>{{end}}</td>
-          <td>{{if .Name}}{{.Name}}{{else}}<span class="muted">—</span>{{end}}</td>
+          <td>{{if .Name}}{{.Name}}{{else}}<span class="muted">-</span>{{end}}</td>
           <td class="muted">{{ftime .CreatedAt}}</td>
           <td class="muted">{{if .LastUsed.IsZero}}never{{else}}{{ftime .LastUsed}}{{end}}</td>
           <td>{{if .Revoked}}<span class="pill off">revoked</span>{{else}}<span class="pill on">active</span>{{end}}</td>

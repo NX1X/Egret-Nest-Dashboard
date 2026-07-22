@@ -10,7 +10,7 @@ import (
 
 // sparkBars renders a compact inline-SVG bar chart from values (chronological,
 // oldest→newest). Bars use fill="currentColor", so the surrounding element's text
-// colour (e.g. .viol / .new) tints them — no inline CSS and no JavaScript, so it
+// colour (e.g. .viol / .new) tints them - no inline CSS and no JavaScript, so it
 // stays within the CSP (default-src 'none'; style-src 'self'; script-src 'none').
 // Inline SVG is document markup, not a fetched resource, so no CSP directive is
 // needed for it. Returns "" when there is nothing to draw.
