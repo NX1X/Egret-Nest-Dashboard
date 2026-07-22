@@ -24,10 +24,19 @@ jobs:
         run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
       - name: Vet
         run: go vet ./...
-      - name: Test with coverage
-        run: |
-          go test -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out | tail -1
+      # Dogfood: run the dashboard's test suite under the published Egret Action
+      # (audit - monitors the egress/exec/file behaviour of the toolchain +
+      # dependency code during the tests, and never blocks CI). Egret guarding a
+      # real consumer build.
+      - name: Test with coverage (guarded by Egret, audit)
+        uses: NX1X/Egret@54e38cd7f67b259ffcad44c87057cd500af8842c # v0.1.2
+        with:
+          version: latest
+          mode: audit
+          upload-sarif: "false"
+          command: |
+            go test -coverprofile=coverage.out ./...
+            go tool cover -func=coverage.out | tail -1
       - name: Build (static, CGO off)
         run: CGO_ENABLED=0 go build ./...
       - name: Verify module checksums
