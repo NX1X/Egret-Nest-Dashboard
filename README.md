@@ -5,13 +5,20 @@
 > flagged/blocked, and which endpoints are new. Your data stays on **your**
 > infrastructure — Egret never runs a central server.
 
-[![GitHub — NX1X/Egret-Nest-Dashboard](https://img.shields.io/badge/GitHub-NX1X%2FEgret--nest--dashboard-181717?logo=github&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard)
+[![CI](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml)
+[![Security](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml)
+[![Release](https://img.shields.io/github/v/release/NX1X/Egret-Nest-Dashboard?logo=github&logoColor=white&sort=semver)](https://github.com/NX1X/Egret-Nest-Dashboard/releases/latest)
+[![Docker: ghcr.io](https://img.shields.io/badge/Docker-ghcr.io%2Fnx1x%2Fegret--nest-2496ED?logo=docker&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard/pkgs/container/egret-nest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/NX1X/Egret-Nest-Dashboard)](https://goreportcard.com/report/github.com/NX1X/Egret-Nest-Dashboard)
+[![Go](https://img.shields.io/github/go-mod/go-version/NX1X/Egret-Nest-Dashboard?logo=go&logoColor=white)](go.mod)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![GitHub - NX1X/Egret-Nest-Dashboard](https://img.shields.io/badge/GitHub-NX1X%2FEgret--nest--dashboard-181717?logo=github&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard)
 
 - **Status:** auth + hardening complete (Tier 3, [ROADMAP](docs/ROADMAP.md))
 - **Repository:** [github.com/NX1X/Egret-Nest-Dashboard](https://github.com/NX1X/Egret-Nest-Dashboard)
 - **Stack:** single static Go binary · pure-Go SQLite (`modernc.org/sqlite`, no CGO)
   · embedded UI (`html/template`) · **zero third-party web framework**
-- **License:** Apache-2.0
+- **License:** [Apache-2.0](LICENSE) - © 2026 NX1X ([nx1xlab.dev](https://nx1xlab.dev))
 
 > **The dashboard is never required.** The Egret agent works fully standalone;
 > it only talks to this server when you set `EGRET_INGEST_URL`. Unset = nothing
