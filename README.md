@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="branding/logo.svg" alt="Egret" width="360">
+</p>
+
 # 🪶 Egret Nest Dashboard
 
 > The **optional**, self-hosted dashboard for [Egret](https://github.com/NX1X/Egret).
