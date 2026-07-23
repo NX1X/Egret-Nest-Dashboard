@@ -4,6 +4,29 @@ Notable changes to Egret Nest Dashboard, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - Brand, distribution, and hardening
+
+### Added
+
+- **Docker Hub distribution.** The container image is mirrored to `nx1x/egret-nest`
+  alongside GHCR, with floating `latest` / `v0` / `v0.1` tags, and the Docker Hub repo
+  overview is kept in sync with the README.
+- **Go fuzzing** over the untrusted-input parsing paths, plus contributor onboarding docs.
+
+### Changed
+
+- **New visual identity** - an egret-in-flight mark across the icon, app-icon, logo
+  (a self-contained dark-card lockup), favicon, and social preview; the README now
+  leads with the logo.
+- **Wider security policy** in SECURITY.md - explicit safe harbor for good-faith
+  research, response-time targets, coordinated disclosure, and reporter credit (plain
+  email, no PGP required).
+
+### Security
+
+- Go toolchain 1.26.5 and refreshed digest-pinned Actions and base images (clears the
+  stdlib advisories).
+
 ## [0.1.0] - first release
 
 The optional self-hosted dashboard for Egret: ingest CI/CD runs and view egress
@@ -40,4 +63,5 @@ services required.
 - **Supply chain:** digest-pinned base images, SHA-pinned Actions, container CVE
   scanning (Trivy), `govulncheck`, and CodeQL.
 
+[0.1.1]: https://github.com/NX1X/Egret-Nest-Dashboard/releases/tag/v0.1.1
 [0.1.0]: https://github.com/NX1X/Egret-Nest-Dashboard/releases/tag/v0.1.0
