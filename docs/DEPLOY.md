@@ -87,7 +87,8 @@ Highlights:
 | Env | Purpose |
 |---|---|
 | `EGRET_NEST_DB` | SQLite path (default `/data/egret-nest.db` in the image) |
-| `EGRET_NEST_SECRET_KEY` | 32-byte hex/base64 key encrypting TOTP seeds at rest (**set this**) |
+| `EGRET_NEST_SECRET_KEY` | 32-byte hex/base64 key encrypting TOTP seeds + UI-stored SSO client secrets at rest. **Required** - the server refuses to start without it, unless `EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1` |
+| `EGRET_NEST_ALLOW_PLAINTEXT_TOTP` | `1` = start without `SECRET_KEY`, storing TOTP seeds unencrypted at rest (not recommended) |
 | `EGRET_NEST_BASE_URL` + `EGRET_NEST_BEHIND_PROXY=1` | required when behind a TLS proxy / for SSO redirects |
 | `EGRET_NEST_TLS_CERT` + `EGRET_NEST_TLS_KEY` | serve **HTTPS natively** (PEM paths, TLS 1.2+) instead of terminating at a proxy - set both or neither |
 | `EGRET_NEST_WEBHOOK_SECRET` | enables the HMAC-verified `POST /webhook/github` |

@@ -54,7 +54,7 @@ webhook/metrics tokens, retention, setup token) is in [docs/DEPLOY.md](docs/DEPL
 |---|---|---|
 | `EGRET_NEST_ADDR` | `:8080` | listen address |
 | `EGRET_NEST_DB` | `egret-nest.db` | SQLite file path |
-| `EGRET_NEST_SECRET_KEY` | _(unset)_ | 32-byte hex/base64 key encrypting TOTP seeds + UI-stored SSO secrets at rest (**set this**) |
+| `EGRET_NEST_SECRET_KEY` | _(unset)_ | 32-byte hex/base64 key encrypting TOTP seeds + UI-stored SSO secrets at rest. **Required** - the server refuses to start without it (unless `EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1`) |
 | `EGRET_NEST_BASE_URL` | _(derived)_ | public URL; required for SSO redirects |
 | `EGRET_NEST_TLS_CERT` / `_TLS_KEY` | _(unset)_ | serve HTTPS natively (else run behind a TLS proxy with `EGRET_NEST_BEHIND_PROXY=1`) |
 | `EGRET_NEST_INSTANCE` | `Egret Nest` | display name (also GUI-editable) |
