@@ -230,6 +230,19 @@ jobs:
           done
           echo "Pushed ${DH}:${TAG} (float: ${FLOAT:-none})"
 
+      # Docker Hub does not read the GitHub README or OCI labels, so mirror the
+      # README + a short tagline onto the Docker Hub repo overview. Same two
+      # secrets as the mirror step above; runs after the image is pushed so the
+      # repo exists to describe.
+      - name: Sync README to Docker Hub
+        uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/egret-nest
+          short-description: "Self-hosted dashboard for Egret - CI/CD egress telemetry, your data stays on your infra"
+          readme-filepath: ./README.md
+
       # SLSA build provenance for the image (verify with:
       #   gh attestation verify oci://ghcr.io/nx1x/egret-nest@<digest> --repo NX1X/Egret-Nest-Dashboard)
       - name: Attest build provenance (image)
