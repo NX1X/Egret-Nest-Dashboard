@@ -4,6 +4,34 @@ Thanks for helping build Egret Nest - the self-hosted dashboard for Egret. A
 few things are stricter than a typical repo, mostly around the ingest boundary,
 the data store, and the deliberately small dependency surface.
 
+## We're looking for contributors
+
+Egret Nest is young and actively maintained, and I'd like people to build it
+with me - regulars who take an area (ingest, auth/SSO, the store, the UI) and
+own it, not only drive-by patches. Stdlib-only Go, no framework to learn.
+
+- **Say hi first if you want:** open a [Discussion](https://github.com/NX1X/Egret-Nest-Dashboard/discussions)
+  or a draft issue. A small PR is a perfectly good introduction.
+- **How reviews work right now:** while the team is small, the maintainer
+  reviews PRs (usually within a few days). The review *gates* below aren't
+  gatekeeping - they're the checklist your PR is measured against, and they
+  apply to the maintainer's own changes too. As the project grows we move to
+  peer review and hand out merge rights to established contributors.
+
+### Good first contributions
+
+- **More fuzz targets.** We fuzz the untrusted-input paths (`internal/auth`
+  secret decryptor, `internal/server` webhook signature); the `/ingest` report
+  decoder and SSO callback parsing are good next targets. See
+  `internal/server/fuzz_test.go` for the pattern.
+- **Deployment recipes:** a Helm values example, a systemd unit, or a
+  reverse-proxy config for a setup we don't document yet.
+- **UI/accessibility passes** on the admin templates.
+- **Docs:** anything in `docs/` that tripped you up getting it running.
+
+Anything tagged `good first issue` / `help wanted` is fair game - comment to
+claim it.
+
 ## Ground rules
 
 - Read the auth & security design in [docs/AUTH.md](docs/AUTH.md) first.
