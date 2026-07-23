@@ -4,7 +4,11 @@ kind: Ingress
 metadata:
   name: {{ include "egret-nest.fullname" . }}
   labels: {{- include "egret-nest.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- $annotations := deepCopy (.Values.ingress.annotations | default dict) }}
+  {{- if and .Values.ingress.sslRedirect (not (hasKey $annotations "nginx.ingress.kubernetes.io/ssl-redirect")) }}
+  {{- $_ := set $annotations "nginx.ingress.kubernetes.io/ssl-redirect" "true" }}
+  {{- end }}
+  {{- with $annotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:

@@ -25,6 +25,8 @@
 //	EGRET_NEST_OIDC_NAME           button label for OIDC (default "SSO")
 //	EGRET_NEST_OIDC_ALLOWED_DOMAIN auto-provision only emails at this domain
 //	EGRET_NEST_SECRET_KEY   32-byte key (hex or base64) to encrypt TOTP seeds at rest
+//	EGRET_NEST_ALLOW_PLAINTEXT_TOTP  "1" = start even without SECRET_KEY (TOTP seeds
+//	                        stored unencrypted); otherwise the server refuses to start
 //	EGRET_NEST_METRICS_TOKEN bearer token gating /metrics (unset = endpoint disabled)
 //	EGRET_NEST_RETENTION_DAYS prune runs older than N days (unset/0 = keep forever)
 //	EGRET_NEST_AUDIT_RETENTION_DAYS audit-log retention (unset/0 = fall back to RETENTION_DAYS)
@@ -130,7 +132,16 @@ func serve() {
 		log.Fatalf("egret-nest: EGRET_NEST_SECRET_KEY: %v", err)
 	}
 	if box == nil {
-		log.Printf("egret-nest: WARNING - EGRET_NEST_SECRET_KEY not set; TOTP seeds are stored unencrypted")
+		// Fail closed: without a secret key, TOTP seeds (2FA credentials) would be
+		// stored in plaintext. Require an explicit opt-in so this can never happen
+		// silently; otherwise refuse to start.
+		if os.Getenv("EGRET_NEST_ALLOW_PLAINTEXT_TOTP") != "1" {
+			log.Fatalf("egret-nest: EGRET_NEST_SECRET_KEY is not set; TOTP seeds would be stored " +
+				"unencrypted. Set EGRET_NEST_SECRET_KEY (32-byte hex/base64), or set " +
+				"EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1 to explicitly accept plaintext TOTP storage.")
+		}
+		log.Printf("egret-nest: WARNING - EGRET_NEST_SECRET_KEY not set and " +
+			"EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1; TOTP seeds are stored unencrypted")
 	}
 	st.UseSecretBox(box)
 

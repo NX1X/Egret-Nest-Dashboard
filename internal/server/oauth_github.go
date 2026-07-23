@@ -239,6 +239,9 @@ func (s *Server) handleGithubCallback(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if user == nil {
+			if !s.ssoProvisioningAllowed(w, r, login, "login.github.denied") {
+				return
+			}
 			user, err = s.provisionGithubUser(login, subject, email)
 			if err != nil {
 				log.Printf("egret-nest: provisioning github user: %v", err)
@@ -258,6 +261,26 @@ func (s *Server) handleGithubCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	s.audit(r, user.Login, "login.github", "")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+// ssoProvisioningAllowed reports whether a brand-new SSO account may be
+// auto-provisioned right now. It refuses (writing a 403 + audit) while the
+// instance is not yet bootstrapped, so an SSO login can't create the very first
+// account and squat the instance before the operator completes /setup. Callers
+// invoke it only when the linked account does not yet exist; an already-existing
+// user logging in is never gated here.
+func (s *Server) ssoProvisioningAllowed(w http.ResponseWriter, r *http.Request, actor, deniedAction string) bool {
+	done, err := s.store.Bootstrapped()
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return false
+	}
+	if !done {
+		s.audit(r, actor, deniedAction, "instance not yet bootstrapped")
+		http.Error(w, "complete first-run setup before SSO login is available", http.StatusForbidden)
+		return false
+	}
+	return true
 }
 
 // provisionGithubUser creates a member account linked to the GitHub identity,

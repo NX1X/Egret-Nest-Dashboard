@@ -14,10 +14,27 @@ import (
 
 const minPasswordLen = 12
 
+// dummyPasswordHash is a valid-format argon2id hash (default params) used to
+// equalize login timing. When the login is unknown or the account has no local
+// password, we still run one argon2id verification against this hash before
+// returning the generic failure, so response time doesn't reveal whether an
+// account exists (user-enumeration side-channel). Computed once at package init.
+var dummyPasswordHash = mustDummyPasswordHash()
+
+func mustDummyPasswordHash() string {
+	h, err := auth.HashPassword("egret-nest-login-timing-equalizer")
+	if err != nil {
+		panic("egret-nest: computing dummy password hash: " + err.Error())
+	}
+	return h
+}
+
 // handleSetupForm renders the first-run bootstrap-admin form (only when there are
 // no users yet).
 func (s *Server) handleSetupForm(w http.ResponseWriter, r *http.Request) {
-	if n, _ := s.store.CountUsers(); n > 0 {
+	// Gate on the dedicated `bootstrapped` flag (not a raw user count): a non-admin
+	// account created by another path must not be able to retire the setup page.
+	if done, _ := s.store.Bootstrapped(); done {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -32,7 +49,7 @@ func (s *Server) handleSetupForm(w http.ResponseWriter, r *http.Request) {
 // can't claim the admin before the operator) and the creation is a single atomic
 // claim (so two concurrent requests can't both mint an admin).
 func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
-	if n, _ := s.store.CountUsers(); n > 0 {
+	if done, _ := s.store.Bootstrapped(); done {
 		http.Error(w, "setup already completed", http.StatusForbidden)
 		return
 	}
@@ -40,9 +57,11 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid CSRF token", http.StatusForbidden)
 		return
 	}
-	// One-time setup token (constant-time). Empty means the token was never set,
-	// which only happens if the server minted+logged one - so it's always required.
-	if s.setupToken == "" || !auth.EqualToken(s.setupToken, r.PostFormValue("setup_token")) {
+	// One-time setup token (constant-time). A nil pointer means the token was never
+	// set or was already burned, which only happens after the server minted+logged
+	// one - so it's always required.
+	tok := s.setupToken.Load()
+	if tok == nil || *tok == "" || !auth.EqualToken(*tok, r.PostFormValue("setup_token")) {
 		s.audit(r, "", "setup.denied", "bad or missing setup token")
 		s.renderSetupError(w, r, "invalid setup token - see the server log at first start")
 		return
@@ -75,7 +94,7 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "setup already completed", http.StatusForbidden)
 		return
 	}
-	s.setupToken = "" // one-time: burn it after a successful bootstrap
+	s.setupToken.Store(nil) // one-time: burn it after a successful bootstrap
 	s.audit(r, login, "setup", "bootstrap admin created")
 
 	if err := s.startSession(w, r, uid); err != nil {
@@ -91,7 +110,7 @@ func (s *Server) handleLoginForm(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	if n, _ := s.store.CountUsers(); n == 0 {
+	if done, _ := s.store.Bootstrapped(); !done {
 		http.Redirect(w, r, "/setup", http.StatusSeeOther)
 		return
 	}
@@ -148,6 +167,10 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user == nil || user.PasswordHash == "" {
+		// Run a dummy argon2id verification so this path takes about the same wall
+		// time as a real password check - otherwise a fast "no such user" response
+		// leaks which logins exist. Result is intentionally discarded.
+		_, _ = auth.VerifyPassword(password, dummyPasswordHash)
 		s.audit(r, login, "login.failed", "unknown user or non-local account")
 		fail()
 		return

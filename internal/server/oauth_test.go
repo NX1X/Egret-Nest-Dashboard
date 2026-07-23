@@ -84,6 +84,10 @@ func beginLogin(t *testing.T, c *http.Client, base string) string {
 func TestGitHubOAuthProvisionsAndLogsIn(t *testing.T) {
 	gh := mockGitHub(t, `{"login":"alice","id":12345,"email":"a@x"}`, true)
 	srv, st := newOAuthServer(t, Config{GitHubClientID: "id", GitHubClientSecret: "sec", GitHubAllowedOrg: "acme", BaseURL: testBaseURL})
+	// The instance must be bootstrapped before SSO auto-provisioning is allowed.
+	if err := st.SetSetting("bootstrapped", "1"); err != nil {
+		t.Fatalf("mark bootstrapped: %v", err)
+	}
 	pointOAuthAt(srv, gh)
 	ts := httptest.NewServer(srv.Handler())
 	defer ts.Close()
@@ -131,6 +135,42 @@ func TestGitHubOAuthProvisionsAndLogsIn(t *testing.T) {
 		t.Errorf("authenticated index = %d, want 200", resp.StatusCode)
 	}
 	resp.Body.Close()
+}
+
+// TestGitHubOAuthRejectedBeforeBootstrap: a brand-new GitHub account must NOT be
+// auto-provisioned before first-run setup completes. After setup, it works.
+func TestGitHubOAuthRejectedBeforeBootstrap(t *testing.T) {
+	gh := mockGitHub(t, `{"login":"newbie","id":54321,"email":"n@x"}`, true)
+	srv, st := newOAuthServer(t, Config{GitHubClientID: "id", GitHubClientSecret: "sec", GitHubAllowedOrg: "acme", BaseURL: testBaseURL})
+	pointOAuthAt(srv, gh)
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+
+	c := noRedirectClient()
+	state := beginLogin(t, c, ts.URL)
+	resp, _ := c.Get(ts.URL + "/auth/github/callback?code=abc&state=" + state)
+	if resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("SSO login before bootstrap = %d, want 403", resp.StatusCode)
+	}
+	resp.Body.Close()
+	if u, _ := st.GetUserByExternalID("github:54321"); u != nil {
+		t.Fatalf("SSO user was provisioned before bootstrap: %+v", u)
+	}
+
+	// Complete first-run setup, then the same login provisions and succeeds.
+	if _, ok, err := st.BootstrapAdmin("admin", "hash"); err != nil || !ok {
+		t.Fatalf("bootstrap admin: ok=%v err=%v", ok, err)
+	}
+	c2 := noRedirectClient()
+	state2 := beginLogin(t, c2, ts.URL)
+	resp2, _ := c2.Get(ts.URL + "/auth/github/callback?code=abc&state=" + state2)
+	if resp2.StatusCode != http.StatusSeeOther {
+		t.Fatalf("SSO login after bootstrap = %d, want 303", resp2.StatusCode)
+	}
+	resp2.Body.Close()
+	if u, _ := st.GetUserByExternalID("github:54321"); u == nil {
+		t.Fatal("SSO user not provisioned after bootstrap")
+	}
 }
 
 func TestGitHubOAuthDeniedWhenNotInOrg(t *testing.T) {

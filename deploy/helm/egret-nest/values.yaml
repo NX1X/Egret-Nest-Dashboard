@@ -21,6 +21,14 @@ service:
 ingress:
   enabled: false
   className: ""
+  # Force HTTP->HTTPS at the ingress (adds the ingress-nginx ssl-redirect
+  # annotation unless you override it below). Keep this on: it both closes plaintext
+  # access AND makes ingress-nginx set X-Forwarded-Proto=https. The app REQUIRES
+  # that header when config.behindProxy is true - it trusts X-Forwarded-Proto to
+  # issue Secure / __Host- cookies and enable HSTS, so the ingress must ALWAYS set
+  # it. Set to false only if your controller is not ingress-nginx or handles the
+  # redirect elsewhere (then ensure that proxy still sets X-Forwarded-Proto).
+  sslRedirect: true
   # Defaults target ingress-nginx: match the app's 8 MiB ingest limit and add a
   # per-client rate limit (adjust for your controller). cert-manager, etc. go here.
   annotations:
@@ -85,11 +93,13 @@ securityContext:
   capabilities:
     drop: ["ALL"]
 
-# Default-deny NetworkPolicy (opt-in - needs a CNI that enforces them). When
-# enabled, only HTTP ingress + DNS/HTTPS egress are allowed; narrow further with
-# ingressFrom / egressTo peer selectors.
+# Default-deny NetworkPolicy. Enabled by default (secure by default); only HTTP
+# ingress + DNS/HTTPS egress are allowed. It degrades gracefully - on a CNI that
+# does not enforce NetworkPolicies the object is simply inert, so leaving it on is
+# safe. Narrow further with ingressFrom / egressTo peer selectors, or set enabled
+# to false if your platform manages egress elsewhere.
 networkPolicy:
-  enabled: false
+  enabled: true
   ingressFrom: []
     # - namespaceSelector:
     #     matchLabels: { kubernetes.io/metadata.name: ingress-nginx }

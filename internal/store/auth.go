@@ -90,6 +90,27 @@ func (s *Store) CountUsers() (int, error) {
 	return n, err
 }
 
+// Bootstrapped reports whether first-run setup has completed. The dedicated
+// `bootstrapped` settings flag is the source of truth (set atomically inside
+// BootstrapAdmin), so a squatting non-admin account created by another path (e.g.
+// SSO auto-provisioning) can't retire /setup just by making CountUsers() > 0. As a
+// fallback for databases created before the flag existed, any existing user also
+// counts as bootstrapped.
+func (s *Store) Bootstrapped() (bool, error) {
+	v, err := s.GetSetting("bootstrapped")
+	if err != nil {
+		return false, err
+	}
+	if v == "1" {
+		return true, nil
+	}
+	n, err := s.CountUsers()
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}
+
 // CreateUser inserts a user and returns its id. ExternalID, when set, links the
 // account to an IdP identity (e.g. "github:12345"); empty is stored as NULL.
 //

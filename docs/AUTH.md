@@ -148,9 +148,9 @@ Organization 1──* Repository 1──* Run
 
 ## 4. Ingest & webhook authentication
 
-- Today's single `EGRET_NEST_TOKEN` becomes **per-org / per-repo scoped ingest
-  tokens** - created in the UI, hashed at rest, revocable, last-used tracked.
-  A leaked token exposes one repo's ingest, not the whole instance.
+- Ingest uses **per-org / per-repo scoped tokens** - created in the UI, hashed at
+  rest, revocable, last-used tracked. A leaked token exposes one repo's ingest, not
+  the whole instance. `EGRET_NEST_TOKEN` remains a legacy shared fallback.
 - GitHub **webhooks** (if enabled) are verified by HMAC-SHA256 over the raw body
   using the webhook secret; unverified deliveries are rejected.
 - Ingest is authn-only (no session) and rate-limited per token.

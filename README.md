@@ -12,7 +12,9 @@
 [![CI](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml)
 [![Security](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml)
 [![Release](https://img.shields.io/github/v/release/NX1X/Egret-Nest-Dashboard?logo=github&logoColor=white&sort=semver)](https://github.com/NX1X/Egret-Nest-Dashboard/releases/latest)
-[![Docker: ghcr.io](https://img.shields.io/badge/Docker-ghcr.io%2Fnx1x%2Fegret--nest-2496ED?logo=docker&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard/pkgs/container/egret-nest)[![Go](https://img.shields.io/github/go-mod/go-version/NX1X/Egret-Nest-Dashboard?logo=go&logoColor=white)](go.mod)
+[![Docker: ghcr.io](https://img.shields.io/badge/Docker-ghcr.io%2Fnx1x%2Fegret--nest-2496ED?logo=docker&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard/pkgs/container/egret-nest)
+[![Watchers](https://img.shields.io/github/watchers/NX1X/Egret-Nest-Dashboard?style=flat&logo=github&label=watchers)](https://github.com/NX1X/Egret-Nest-Dashboard/watchers)
+[![Go](https://img.shields.io/github/go-mod/go-version/NX1X/Egret-Nest-Dashboard?logo=go&logoColor=white)](go.mod)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub - NX1X/Egret-Nest-Dashboard](https://img.shields.io/badge/GitHub-NX1X%2FEgret--nest--dashboard-181717?logo=github&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard)
 
@@ -21,6 +23,8 @@
 - **Stack:** single static Go binary · pure-Go SQLite (`modernc.org/sqlite`, no CGO)
   · embedded UI (`html/template`) · **zero third-party web framework**
 - **License:** [Apache-2.0](LICENSE) - © 2026 NX1X ([nx1xlab.dev](https://nx1xlab.dev))
+
+**Links:** [Website](https://egret.nx1xlab.dev/) · [Download](https://egret.nx1xlab.dev/download/) · [Docker Hub](https://hub.docker.com/r/nx1x/egret-nest) · [GHCR image](https://github.com/NX1X/Egret-Nest-Dashboard/pkgs/container/egret-nest) · [Agent - Egret](https://github.com/NX1X/Egret) · [GitHub App](https://github.com/apps/egret-security-app)
 
 > **The dashboard is never required.** The Egret agent works fully standalone;
 > it only talks to this server when you set `EGRET_INGEST_URL`. Unset = nothing
@@ -50,7 +54,7 @@ webhook/metrics tokens, retention, setup token) is in [docs/DEPLOY.md](docs/DEPL
 |---|---|---|
 | `EGRET_NEST_ADDR` | `:8080` | listen address |
 | `EGRET_NEST_DB` | `egret-nest.db` | SQLite file path |
-| `EGRET_NEST_SECRET_KEY` | _(unset)_ | 32-byte hex/base64 key encrypting TOTP seeds + UI-stored SSO secrets at rest (**set this**) |
+| `EGRET_NEST_SECRET_KEY` | _(unset)_ | 32-byte hex/base64 key encrypting TOTP seeds + UI-stored SSO secrets at rest. **Required** - the server refuses to start without it (unless `EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1`) |
 | `EGRET_NEST_BASE_URL` | _(derived)_ | public URL; required for SSO redirects |
 | `EGRET_NEST_TLS_CERT` / `_TLS_KEY` | _(unset)_ | serve HTTPS natively (else run behind a TLS proxy with `EGRET_NEST_BEHIND_PROXY=1`) |
 | `EGRET_NEST_INSTANCE` | `Egret Nest` | display name (also GUI-editable) |
@@ -107,7 +111,7 @@ the standard library, pure-Go only (no CGO), no npm build chain.
 
 ## Roadmap & status
 
-**Tagged `v0.1.0`** (feature-complete, security-reviewed). Shipped: ingest + drift
+**Tagged `v0.1.1`** (feature-complete, security-reviewed). Shipped: ingest + drift
 views, the full auth trilogy (local+TOTP / GitHub / OIDC) with org RBAC, sessions/CSRF,
 scoped ingest tokens + HMAC webhooks, the admin console (incl. UI SSO config), native
 TLS, packaging (Docker/compose/Helm), and a visual identity pass - all
@@ -120,7 +124,7 @@ For details, see the **docs map** below. Current status and future direction liv
 
 | Doc | Owns |
 |---|---|
-| [CHANGELOG.md](CHANGELOG.md) | Released changes (`[0.1.0]`) - the feature history |
+| [CHANGELOG.md](CHANGELOG.md) | Released-version history (`[0.1.0]` → `[0.1.1]`) |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Current status + what's planned |
 | [docs/AUTH.md](docs/AUTH.md) | Authoritative auth & security design |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Deploy guide + full env reference |
