@@ -29,7 +29,9 @@ concurrency:
 jobs:
   binary:
     name: Binary + GitHub Release
-    runs-on: ubuntu-latest
+    # Pin the runner on the trust path (reproducible release build); bump
+    # deliberately when GitHub deprecates the image. CI stays on ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     # `release` is a protected GitHub Environment: configure required reviewers +
     # (optionally) a wait timer in repo Settings → Environments so a tag push
@@ -123,7 +125,7 @@ jobs:
 
   image:
     name: Container image (GHCR, digest-pinned)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: release
     permissions:

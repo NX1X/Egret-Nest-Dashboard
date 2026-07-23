@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,7 +30,7 @@ jobs:
       # dependency code during the tests, and never blocks CI). Egret guarding a
       # real consumer build.
       - name: Test with coverage (guarded by Egret, audit)
-        uses: NX1X/Egret@54e38cd7f67b259ffcad44c87057cd500af8842c # v0.1.2
+        uses: NX1X/Egret@95d7c293cd828369222aa5aec03952a1379e7fe6 # v0.1.3
         with:
           version: latest
           mode: audit
@@ -45,3 +46,63 @@ jobs:
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@v1.6.0
           "$(go env GOPATH)/bin/govulncheck" ./...
+
+  # Maintain the Egret Security allowlist dashboard issue as egret-security-app[bot]:
+  # mint an installation token in-workflow (server-less), then let the Egret Action
+  # observe the dashboard's own build egress and open/update the tracking issue -
+  # the same allowlist dashboard the App maintains in the agent repo, now dogfooded
+  # here. Runs on main + manual dispatch (not PRs; fork PRs can't read the secrets).
+  # No-ops with a notice until the Egret App secrets are configured on this repo.
+  app-dashboard:
+    name: Egret allowlist dashboard (egret-security-app[bot])
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check Egret App secrets are configured
+        id: gate
+        env:
+          APP_ID: ${{ secrets.EGRET_APP_ID }}
+        run: |
+          if [ -n "${APP_ID}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::EGRET_APP_ID not set - skipping the dashboard issue. Add EGRET_APP_ID + EGRET_APP_PRIVATE_KEY repo secrets (the Egret App) to enable."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          go-version: "1.26.5"
+      - name: Download modules
+        if: steps.gate.outputs.ready == 'true'
+        run: go mod download
+
+      - name: Mint Egret App installation token
+        id: app-token
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+        with:
+          app-id: ${{ secrets.EGRET_APP_ID }}
+          private-key: ${{ secrets.EGRET_APP_PRIVATE_KEY }}
+          # Least-privilege: only what the dashboard-issue publisher needs.
+          permission-issues: write
+          permission-contents: read
+
+      - name: Guard the build + maintain the allowlist dashboard issue
+        if: steps.gate.outputs.ready == 'true'
+        uses: NX1X/Egret@95d7c293cd828369222aa5aec03952a1379e7fe6 # v0.1.3
+        with:
+          version: latest
+          mode: audit
+          upload-sarif: "false"
+          github-token: ${{ steps.app-token.outputs.token }}
+          dashboard-issue: true
+          command: CGO_ENABLED=0 go build ./...
