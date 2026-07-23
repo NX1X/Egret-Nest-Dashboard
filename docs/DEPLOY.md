@@ -94,6 +94,8 @@ Highlights:
 | `EGRET_NEST_METRICS_TOKEN` | enables token-gated `/metrics` (≥32 chars) |
 | `EGRET_NEST_RETENTION_DAYS` / `_AUDIT_RETENTION_DAYS` | pruning windows (0 = keep) |
 | `EGRET_NEST_GITHUB_*` / `EGRET_NEST_OIDC_*` | SSO providers (see AUTH.md) |
+| `EGRET_NEST_SETUP_TOKEN` | one-time token required at `/setup` (unset = a random one is generated + logged) |
+| `EGRET_NEST_OPEN_INGEST` | `1` = accept `POST /ingest` with **no token** - **dev only, never in production** |
 
 ## Backup & upgrade
 
@@ -108,10 +110,10 @@ Highlights:
 - **Upgrade:** pull the new image / bump `image.tag` and restart. Schema
   migrations are idempotent and apply on startup; the DB upgrades in place.
 
-## Supply-chain (follow-ups tracked before v1.0)
+## Supply-chain
 
-- Base images (`golang`, `distroless`, `nginx`) should be **digest-pinned**;
-  Renovate maintains the digests (see `.github/renovate.json5`).
-- A `docker-publish` CI workflow should **build from the pinned digest, scan with
-  Trivy/Grype (fail on HIGH/CRITICAL), then push + sign (cosign)** by digest before
-  `ghcr.io/nx1x/egret-nest` is published. Not yet wired - track in the roadmap.
+- Base images (`golang`, `distroless`, `nginx`) are **digest-pinned**; Renovate
+  maintains the digests (see `.github/renovate.json5`).
+- The release workflow builds from the pinned digests, **scans with Trivy (fails on
+  HIGH/CRITICAL)**, then pushes by digest to `ghcr.io/nx1x/egret-nest` (mirrored to
+  **Docker Hub** `nx1x/egret-nest`) with **SLSA build provenance**.

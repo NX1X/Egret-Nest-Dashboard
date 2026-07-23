@@ -87,11 +87,19 @@ in both repos (only the GitHub social preview differs per-repo). Vector identity
 polished/animated logo pass + uploading each repo's social-preview PNG remain ⬜.
 Mirrors [Egret C9](https://github.com/NX1X/Egret/blob/main/docs/ROADMAP.md).
 
+### Shipped since v0.1.0
+
+- **v0.1.1** - egret-in-flight brand refresh; **Docker Hub distribution**
+  (`nx1x/egret-nest`, floating tags, README-synced overview) alongside GHCR; Go fuzzing
+  over the parsers; wider safe-harbor security policy; Go 1.26.5. See
+  [CHANGELOG.md](../CHANGELOG.md).
+
 **Remaining before the product hits v1.0:** the dashboard's own DoD is met (below);
 **v1.0 is the combined product gate** - the agent's block-mode enforcer re-gate is the
 last gating item (see the [agent roadmap](https://github.com/NX1X/Egret/blob/main/docs/ROADMAP.md)).
-Also open (not code): publish the `v0.1.0` GitHub Release + GHCR image (blocked on
-GitHub Actions billing), and the one backlog item (OIDC DNS-rebinding hardening).
+The `v0.1.0` and `v0.1.1` releases are published (GitHub Releases + **GHCR and Docker
+Hub** images with SLSA provenance); the OIDC DNS-rebinding item is closed (issuer
+SSRF-guard at dial time).
 
 ---
 
@@ -129,8 +137,8 @@ agent enforcer re-gate is the outstanding item).
       auth/token/role/membership events.
 - [x] Full security review (appsec + database + infra + pentest) sign-off; all
       high/critical findings fixed.
-- [~] CI green: `gofmt`, `go vet`, tests (incl. auth), `go mod verify`, `govulncheck`
-      - green locally; **CI runs are blocked on GitHub Actions billing** (account, not code).
+- [x] CI green: `gofmt`, `go vet`, tests (incl. auth), `go mod verify`, `govulncheck`
+      - runs in CI; the tag-triggered release workflow builds + publishes the binary + image.
 - [x] Deploy story: `docker compose up` + a Helm chart; backup/restore documented.
 - [x] Docs: [AUTH.md](AUTH.md), [deploy guide](DEPLOY.md), config reference; LICENSE + NOTICE.
 
