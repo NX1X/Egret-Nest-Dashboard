@@ -12,9 +12,7 @@
 [![CI](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/ci.yml)
 [![Security](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml/badge.svg)](https://github.com/NX1X/Egret-Nest-Dashboard/actions/workflows/security.yml)
 [![Release](https://img.shields.io/github/v/release/NX1X/Egret-Nest-Dashboard?logo=github&logoColor=white&sort=semver)](https://github.com/NX1X/Egret-Nest-Dashboard/releases/latest)
-[![Docker: ghcr.io](https://img.shields.io/badge/Docker-ghcr.io%2Fnx1x%2Fegret--nest-2496ED?logo=docker&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard/pkgs/container/egret-nest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/NX1X/Egret-Nest-Dashboard)](https://goreportcard.com/report/github.com/NX1X/Egret-Nest-Dashboard)
-[![Go](https://img.shields.io/github/go-mod/go-version/NX1X/Egret-Nest-Dashboard?logo=go&logoColor=white)](go.mod)
+[![Docker: ghcr.io](https://img.shields.io/badge/Docker-ghcr.io%2Fnx1x%2Fegret--nest-2496ED?logo=docker&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard/pkgs/container/egret-nest)[![Go](https://img.shields.io/github/go-mod/go-version/NX1X/Egret-Nest-Dashboard?logo=go&logoColor=white)](go.mod)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![GitHub - NX1X/Egret-Nest-Dashboard](https://img.shields.io/badge/GitHub-NX1X%2FEgret--nest--dashboard-181717?logo=github&logoColor=white)](https://github.com/NX1X/Egret-Nest-Dashboard)
 
