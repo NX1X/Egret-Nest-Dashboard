@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="branding/logo.svg" alt="Egret" width="360">
+  <img src="https://egret.nx1xlab.dev/icon-512.png" alt="Egret Nest" width="120">
 </p>
 
 # 🪶 Egret Nest Dashboard
