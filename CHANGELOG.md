@@ -4,6 +4,45 @@ Notable changes to Egret Nest Dashboard, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - Security hardening (pentest remediation)
+
+### Changed (upgrade impact)
+
+- **The server refuses to start without `EGRET_NEST_SECRET_KEY`** when TOTP data
+  would otherwise be stored unencrypted. Set the key, or explicitly opt into the
+  old behavior with `EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1`. This was previously a
+  warning that silently continued with plaintext TOTP seeds at rest.
+- **SSO login is refused until first-run setup is complete.** A brand-new SSO
+  account can no longer be auto-provisioned before the instance is bootstrapped,
+  closing a race where an early SSO login could permanently lock the operator out
+  of the admin console.
+- **The Helm chart now defaults `networkPolicy.enabled: true`** (default-deny
+  egress). It degrades gracefully on a CNI that doesn't enforce NetworkPolicy.
+- **Default deployment examples pin a released image tag** instead of `latest`
+  (compose, `.env.example`, docs); floating tags are noted as convenience-only.
+
+### Security
+
+- **First-run bootstrap is race-safe.** The `bootstrapped` state is claimed
+  atomically alongside admin creation, and SSO provisioning + the `/setup` gate
+  both key off it, so exactly one admin is ever created (verified under
+  concurrent load).
+- **Login no longer leaks account existence via timing.** The unknown-user /
+  SSO-only path now runs a dummy argon2id verification so it costs the same as a
+  real wrong-password attempt.
+- **Container images are vulnerability-scanned before publish.** The release
+  workflow runs Trivy (fail on HIGH/CRITICAL) between build and push.
+- **CI/CD hardening:** `step-security/harden-runner` (audit) on the
+  credential-holding jobs, and `concurrency` cancellation on PR workflows.
+- **The one-time setup token is accessed atomically** (`atomic.Pointer`), fixing
+  a data race under concurrent `/setup` requests.
+
+### Changed
+
+- **Ingress TLS enforcement is configurable** (`ingress.sslRedirect`), and the
+  docs recommend `existingSecret` (SOPS / External Secrets / Vault) as the
+  primary way to supply secrets rather than plaintext `values.yaml`.
+
 ## [0.1.1] - Brand, distribution, and hardening
 
 ### Added
