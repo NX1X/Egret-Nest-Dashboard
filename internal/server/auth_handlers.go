@@ -57,9 +57,11 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid CSRF token", http.StatusForbidden)
 		return
 	}
-	// One-time setup token (constant-time). Empty means the token was never set,
-	// which only happens if the server minted+logged one - so it's always required.
-	if s.setupToken == "" || !auth.EqualToken(s.setupToken, r.PostFormValue("setup_token")) {
+	// One-time setup token (constant-time). A nil pointer means the token was never
+	// set or was already burned, which only happens after the server minted+logged
+	// one - so it's always required.
+	tok := s.setupToken.Load()
+	if tok == nil || *tok == "" || !auth.EqualToken(*tok, r.PostFormValue("setup_token")) {
 		s.audit(r, "", "setup.denied", "bad or missing setup token")
 		s.renderSetupError(w, r, "invalid setup token - see the server log at first start")
 		return
@@ -92,7 +94,7 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "setup already completed", http.StatusForbidden)
 		return
 	}
-	s.setupToken = "" // one-time: burn it after a successful bootstrap
+	s.setupToken.Store(nil) // one-time: burn it after a successful bootstrap
 	s.audit(r, login, "setup", "bootstrap admin created")
 
 	if err := s.startSession(w, r, uid); err != nil {

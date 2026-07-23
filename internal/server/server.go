@@ -74,11 +74,14 @@ type Server struct {
 	// SSO providers are hot-swappable (env config merged with UI-stored config via
 	// /admin/auth). Read them through ghOAuth()/oidcProv(); each Load() is nil when
 	// that provider is not configured. atomic.Pointer makes a mid-request swap safe.
-	oauth      atomic.Pointer[githubOAuth]
-	oidc       atomic.Pointer[oidcProvider]
-	authMu     sync.Mutex // serializes /admin/auth writes (snapshot→write→reload→rollback)
-	logs       *ringLog   // in-memory access log for the admin Logs page
-	setupToken string     // required on POST /setup while un-bootstrapped
+	oauth  atomic.Pointer[githubOAuth]
+	oidc   atomic.Pointer[oidcProvider]
+	authMu sync.Mutex // serializes /admin/auth writes (snapshot→write→reload→rollback)
+	logs   *ringLog   // in-memory access log for the admin Logs page
+	// setupToken is the one-time token required on POST /setup while un-bootstrapped.
+	// It's read + burned from concurrent HTTP handlers, so it's an atomic pointer
+	// (nil = no token / already burned). Store a *string; Load()==nil means unset.
+	setupToken atomic.Pointer[string]
 }
 
 // ghOAuth returns the current GitHub OAuth provider, or nil when not configured.
@@ -127,15 +130,16 @@ func New(st *store.Store, cfg Config) (*Server, error) {
 	// one-time token so an attacker can't claim the admin before the operator. Use
 	// the configured token, else mint + log one.
 	if n, _ := st.CountUsers(); n == 0 {
-		srv.setupToken = cfg.SetupToken
-		if srv.setupToken == "" {
-			tok, _, err := auth.NewSecretToken()
+		tok := cfg.SetupToken
+		if tok == "" {
+			var err error
+			tok, _, err = auth.NewSecretToken()
 			if err != nil {
 				return nil, fmt.Errorf("generating setup token: %w", err)
 			}
-			srv.setupToken = tok
 			log.Printf("egret-nest: FIRST-RUN SETUP TOKEN (enter at /setup): %s", tok)
 		}
+		srv.setupToken.Store(&tok)
 	}
 	return srv, nil
 }

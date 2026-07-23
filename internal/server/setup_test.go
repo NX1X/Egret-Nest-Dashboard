@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"sync"
 	"testing"
 )
 
@@ -41,6 +42,53 @@ func TestSetupRequiresToken(t *testing.T) {
 	}
 	if n, _ := st.CountUsers(); n != 1 {
 		t.Errorf("want 1 user after bootstrap, got %d", n)
+	}
+}
+
+// TestSetupConcurrentSingleAdmin fires many /setup POSTs with the correct token
+// at once: exactly one must create the admin, the rest fail closed, and the DB
+// ends with exactly one user. It also exercises the concurrent read + burn of the
+// server's setup token under the race detector (go test -race).
+func TestSetupConcurrentSingleAdmin(t *testing.T) {
+	ts, st := newTestServer(t, Config{})
+
+	const n = 12
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	successes := 0
+	wg.Add(n)
+	start := make(chan struct{})
+	for i := 0; i < n; i++ {
+		go func() {
+			defer wg.Done()
+			jar, _ := cookiejar.New(nil)
+			c := &http.Client{Jar: jar}
+			c.Get(ts.URL + "/setup") // per-client CSRF cookie
+			form := url.Values{
+				"_csrf": {csrfFrom(t, jar, ts.URL)}, "setup_token": {testSetupToken},
+				"login": {"admin"}, "password": {"supersecretpassword"},
+			}
+			<-start // release all goroutines together to maximize contention
+			resp, err := c.PostForm(ts.URL+"/setup", form)
+			if err != nil {
+				return
+			}
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				mu.Lock()
+				successes++
+				mu.Unlock()
+			}
+		}()
+	}
+	close(start)
+	wg.Wait()
+
+	if successes != 1 {
+		t.Errorf("want exactly 1 successful /setup, got %d", successes)
+	}
+	if cnt, _ := st.CountUsers(); cnt != 1 {
+		t.Errorf("want exactly 1 user after concurrent setup, got %d", cnt)
 	}
 }
 
