@@ -147,13 +147,6 @@ jobs:
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
-      # First step: baseline the runner and audit egress. This job holds GHCR +
-      # Docker Hub push credentials, so record every network destination the build
-      # (including third-party module + base-image code) reaches. Audit-only for now.
-      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
-        with:
-          egress-policy: audit
-
       - name: Validate release tag format
         run: |
           # Reject anything that isn't vMAJOR.MINOR.PATCH before we check out that

@@ -32,8 +32,7 @@ Notable changes to Egret Nest Dashboard, following
   real wrong-password attempt.
 - **Container images are vulnerability-scanned before publish.** The release
   workflow runs Trivy (fail on HIGH/CRITICAL) between build and push.
-- **CI/CD hardening:** `step-security/harden-runner` (audit) on the
-  credential-holding jobs, and `concurrency` cancellation on PR workflows.
+- **CI/CD hardening:** `concurrency` cancellation on PR workflows.
 - **The one-time setup token is accessed atomically** (`atomic.Pointer`), fixing
   a data race under concurrent `/setup` requests.
 
