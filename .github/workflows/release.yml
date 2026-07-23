@@ -138,6 +138,13 @@ jobs:
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
+      # First step: baseline the runner and audit egress. This job holds GHCR +
+      # Docker Hub push credentials, so record every network destination the build
+      # (including third-party module + base-image code) reaches. Audit-only for now.
+      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
       - name: Validate release tag format
         run: |
           # Reject anything that isn't vMAJOR.MINOR.PATCH before we check out that
@@ -157,15 +164,37 @@ jobs:
           ACTOR: ${{ github.actor }}
         run: echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${ACTOR}" --password-stdin
 
-      - name: Build and push image (from digest-pinned bases)
+      - name: Build image (from digest-pinned bases)
         id: build
         env:
-          GH_TOKEN: ${{ github.token }}   # for `gh release list` (needs contents:read)
           OWNER: ${{ github.repository_owner }}
         run: |
           # GHCR requires a lowercase repository path.
           IMG=$(echo "ghcr.io/${OWNER}/egret-nest" | tr '[:upper:]' '[:lower:]')
           docker build --build-arg VERSION="${TAG}" -t "${IMG}:${TAG}" .
+          echo "image=${IMG}" >> "${GITHUB_OUTPUT}"
+          echo "Built ${IMG}:${TAG}"
+
+      # Vulnerability gate: scan the locally-built image BEFORE any registry push or
+      # SLSA attestation. A HIGH/CRITICAL finding fails the job (exit-code 1), so a
+      # vulnerable image is never published. Unfixed CVEs (no upstream patch yet) are
+      # skipped - blocking on them would be unactionable. Pinned by full SHA per the
+      # repo's action-pinning discipline.
+      - name: Scan image for vulnerabilities (Trivy, blocking)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.build.outputs.image }}:${{ env.TAG }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Push image + floating tags
+        id: push
+        env:
+          GH_TOKEN: ${{ github.token }}   # for `gh release list` (needs contents:read)
+          IMG: ${{ steps.build.outputs.image }}
+        run: |
           docker push "${IMG}:${TAG}"
           # Floating tags: latest, vMAJOR (v0), vMAJOR.MINOR (v0.1). Each moves ONLY
           # when TAG is the highest published release within its own scope, so a
@@ -197,7 +226,6 @@ jobs:
             echo "Moved ${IMG}:${t} -> ${TAG}"
           done
           DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMG}:${TAG}" | cut -d@ -f2)
-          echo "image=${IMG}" >> "${GITHUB_OUTPUT}"
           echo "digest=${DIGEST}" >> "${GITHUB_OUTPUT}"
           echo "float=${FLOAT}" >> "${GITHUB_OUTPUT}"
           echo "Pushed ${IMG}:${TAG} @ ${DIGEST} (float: ${FLOAT:-none})"
@@ -218,7 +246,7 @@ jobs:
         env:
           DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           SRC: ${{ steps.build.outputs.image }}
-          FLOAT: ${{ steps.build.outputs.float }}
+          FLOAT: ${{ steps.push.outputs.float }}
         run: |
           DH=$(echo "docker.io/${DH_USER}/egret-nest" | tr '[:upper:]' '[:lower:]')
           docker tag "${SRC}:${TAG}" "${DH}:${TAG}"
@@ -265,5 +293,5 @@ jobs:
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-name: ${{ steps.build.outputs.image }}
-          subject-digest: ${{ steps.build.outputs.digest }}
+          subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true

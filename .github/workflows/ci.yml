@@ -9,6 +9,12 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded runs on the same ref (e.g. rapid pushes to a PR) so we don't
+# burn runners on stale commits. main pushes and tags each get their own group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -61,6 +67,12 @@ jobs:
     permissions:
       contents: read
     steps:
+      # First step: this job mints an Egret App installation token from the
+      # EGRET_APP_* secrets, so baseline the runner and audit its egress.
+      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
       - name: Check Egret App secrets are configured
         id: gate
         env:

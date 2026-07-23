@@ -11,8 +11,10 @@ services:
       context: .
       args:
         VERSION: ${EGRET_NEST_VERSION:-dev}
-    # GHCR (auto-published + SLSA-signed). Docker Hub mirror: nx1x/egret-nest
-    image: ghcr.io/nx1x/egret-nest:${EGRET_NEST_VERSION:-latest}
+    # GHCR (auto-published + SLSA-signed). Docker Hub mirror: nx1x/egret-nest.
+    # Defaults to a specific released tag for reproducible deploys; `latest` and the
+    # other floating tags (v0, v0.1) are a convenience only - not for pinned deploys.
+    image: ghcr.io/nx1x/egret-nest:${EGRET_NEST_VERSION:-v0.1.1}
     restart: unless-stopped
     # No published port when running behind nginx (the tls profile); for the
     # bare dashboard, expose 8080 on the host.
@@ -26,7 +28,9 @@ services:
       EGRET_NEST_BEHIND_PROXY: ${EGRET_NEST_BEHIND_PROXY:-0}
       EGRET_NEST_BASE_URL: ${EGRET_NEST_BASE_URL:-}
       # At-rest encryption for TOTP seeds (32-byte hex/base64). Strongly recommended.
+      # Without it the server refuses to start unless ALLOW_PLAINTEXT_TOTP=1.
       EGRET_NEST_SECRET_KEY: ${EGRET_NEST_SECRET_KEY:-}
+      EGRET_NEST_ALLOW_PLAINTEXT_TOTP: ${EGRET_NEST_ALLOW_PLAINTEXT_TOTP:-}
       EGRET_NEST_WEBHOOK_SECRET: ${EGRET_NEST_WEBHOOK_SECRET:-}
       EGRET_NEST_METRICS_TOKEN: ${EGRET_NEST_METRICS_TOKEN:-}
       EGRET_NEST_RETENTION_DAYS: ${EGRET_NEST_RETENTION_DAYS:-0}

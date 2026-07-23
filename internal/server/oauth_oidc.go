@@ -278,6 +278,9 @@ func (s *Server) handleOIDCCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if user == nil {
+		if !s.ssoProvisioningAllowed(w, r, capForAudit(claims.Email), "login.oidc.denied") {
+			return
+		}
 		user, err = s.provisionOIDCUser(claims.Email, subject)
 		if err != nil {
 			log.Printf("egret-nest: provisioning oidc user: %v", err)

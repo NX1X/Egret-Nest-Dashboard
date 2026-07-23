@@ -9,8 +9,14 @@ SQLite file (`egret-nest backup <path>`) rather than replicating.
 ```bash
 docker run -d -p 8080:8080 -v egret-nest-data:/data \
   -e EGRET_NEST_SECRET_KEY=$(openssl rand -hex 32) \
-  ghcr.io/nx1x/egret-nest:latest
+  ghcr.io/nx1x/egret-nest:v0.1.1
 ```
+
+Pin a **specific released tag** (e.g. `v0.1.1`) for reproducible deploys. The floating
+tags (`latest`, `v0`, `v0.1`) are a convenience only - they move under you and are not for
+pinned/reproducible deployments. `EGRET_NEST_SECRET_KEY` is required: without it (and
+without `EGRET_NEST_ALLOW_PLAINTEXT_TOTP=1`) the server refuses to start rather than store
+TOTP seeds in plaintext.
 
 The image is published to **GitHub Container Registry** (`ghcr.io/nx1x/egret-nest`, signed
 with SLSA build provenance) and mirrored on **Docker Hub** (`nx1x/egret-nest`). Swap the
@@ -51,10 +57,26 @@ helm install egret-nest deploy/helm/egret-nest \
 
 The chart runs **1 replica** (SQLite) with the `Recreate` strategy, a hardened
 pod (non-root, read-only rootfs, all caps dropped, seccomp `RuntimeDefault`), a
-PVC for `/data`, and a Secret for the sensitive env. Point `existingSecret` at
-your own Secret (same `EGRET_NEST_*` keys) to manage secrets out-of-band. TLS is
-handled by your ingress controller (e.g. cert-manager) - the app sits behind it
-with `config.behindProxy: true`.
+default-deny NetworkPolicy (`networkPolicy.enabled: true`), a PVC for `/data`, and
+a Secret for the sensitive env. TLS is handled by your ingress controller (e.g.
+cert-manager) - the app sits behind it with `config.behindProxy: true`, and
+`ingress.sslRedirect: true` keeps the ingress forcing HTTPS and setting
+`X-Forwarded-Proto=https` (which the app requires to issue `Secure` / `__Host-`
+cookies).
+
+**Secrets - recommended:** do NOT put secret values in `values.yaml` (they land in
+plaintext in your release manifests / history). Instead point `existingSecret` at a
+Secret you manage out-of-band with the same `EGRET_NEST_*` keys, sourced from
+**SOPS**, **External Secrets Operator**, or **Vault**:
+
+```bash
+helm install egret-nest deploy/helm/egret-nest \
+  --set config.baseURL=https://egret.example.com \
+  --set ingress.enabled=true --set ingress.host=egret.example.com \
+  --set existingSecret=egret-nest-secrets
+```
+
+Setting the inline `secrets.*` values is supported for quick trials only.
 
 ## Configuration reference
 
