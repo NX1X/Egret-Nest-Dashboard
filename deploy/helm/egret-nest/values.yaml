@@ -4,7 +4,7 @@ image:
   # GHCR is auto-published + SLSA-signed by the release workflow. Docker Hub mirror:
   # set repository to nx1x/egret-nest to pull from there instead.
   repository: ghcr.io/nx1x/egret-nest
-  tag: ""              # defaults to .Chart.AppVersion
+  tag: "@sha256:910b6d1dbebeb324c274ef4580fcd66e59eb8d29baded5e021935e1659134d00"              # defaults to .Chart.AppVersion
   pullPolicy: IfNotPresent
 
 # IMPORTANT: the store is embedded SQLite (single writer), so this MUST stay 1.
