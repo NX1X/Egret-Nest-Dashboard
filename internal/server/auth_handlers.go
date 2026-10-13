@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -79,6 +80,11 @@ func (s *Server) handleSetup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hash, err := auth.HashPassword(password)
+	if errors.Is(err, auth.ErrBusy) {
+		w.Header().Set("Retry-After", "5")
+		http.Error(w, "server busy - try again in a moment", http.StatusServiceUnavailable)
+		return
+	}
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -119,6 +125,19 @@ func (s *Server) handleLoginForm(w http.ResponseWriter, r *http.Request) {
 		"CSRF":     s.csrfToken(w, r),
 		"GitHub":   s.ghOAuth() != nil,
 		"OIDCName": s.oidcName(),
+	})
+}
+
+// renderLoginBusy answers a login that found every password-hashing slot busy.
+// Known and unknown logins get exactly the same response, so it cannot reveal
+// which accounts exist. It records no limiter strike and no audit row: the
+// password was never checked, and an unauthenticated flood must not fill the
+// audit log.
+func (s *Server) renderLoginBusy(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Retry-After", "5")
+	s.renderStatus(w, http.StatusServiceUnavailable, "login.html", map[string]any{
+		"Instance": s.instanceName(), "CSRF": s.csrfToken(w, r), "GitHub": s.ghOAuth() != nil,
+		"OIDCName": s.oidcName(), "Error": "the server is busy - try again in a moment",
 	})
 }
 
@@ -169,13 +188,20 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if user == nil || user.PasswordHash == "" {
 		// Run a dummy argon2id verification so this path takes about the same wall
 		// time as a real password check - otherwise a fast "no such user" response
-		// leaks which logins exist. Result is intentionally discarded.
-		_, _ = auth.VerifyPassword(password, dummyPasswordHash)
+		// leaks which logins exist. The match result is intentionally discarded.
+		if _, err := auth.VerifyPassword(password, dummyPasswordHash); errors.Is(err, auth.ErrBusy) {
+			s.renderLoginBusy(w, r)
+			return
+		}
 		s.audit(r, login, "login.failed", "unknown user or non-local account")
 		fail()
 		return
 	}
 	ok, err := auth.VerifyPassword(password, user.PasswordHash)
+	if errors.Is(err, auth.ErrBusy) {
+		s.renderLoginBusy(w, r)
+		return
+	}
 	if err != nil || !ok {
 		s.audit(r, login, "login.failed", "bad password")
 		fail()

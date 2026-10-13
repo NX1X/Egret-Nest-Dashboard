@@ -11,12 +11,69 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"golang.org/x/crypto/argon2"
 )
 
 // ErrInvalidHash is returned when a stored password hash cannot be parsed.
 var ErrInvalidHash = errors.New("invalid password hash format")
+
+// ErrBusy is returned when no argon2id slot became free within hashWait.
+var ErrBusy = errors.New("password hashing is busy")
+
+// maxConcurrentHashes bounds concurrent argon2id work across the process. Each
+// hash with the default parameters allocates 64 MiB, and login runs one even for
+// an unknown user (timing equalization). Unbounded, about 4 parallel anonymous
+// logins exhausted the 256 MiB container limit (measured: 8 parallel hashes
+// peaked at 513 MiB). Two slots cap hashing at about 128 MiB.
+const maxConcurrentHashes = 2
+
+// defaultHashWait is how long a caller waits for a free argon2id slot.
+const defaultHashWait = 3 * time.Second
+
+var (
+	hashSlots = make(chan struct{}, maxConcurrentHashes)
+	// hashWaitNanos overrides defaultHashWait when non-zero (tests only).
+	// Atomic, because handlers read it on other goroutines.
+	hashWaitNanos atomic.Int64
+)
+
+// acquireHashSlot waits up to the hash wait for a free argon2id slot.
+func acquireHashSlot() bool {
+	wait := defaultHashWait
+	if n := hashWaitNanos.Load(); n > 0 {
+		wait = time.Duration(n)
+	}
+	t := time.NewTimer(wait)
+	defer t.Stop()
+	select {
+	case hashSlots <- struct{}{}:
+		return true
+	case <-t.C:
+		return false
+	}
+}
+
+func releaseHashSlot() { <-hashSlots }
+
+// HoldHashSlotsForTest occupies every argon2id slot and sets the wait for a free
+// slot to wait, so a caller's ErrBusy handling can be tested. It returns a func
+// that releases the slots and restores the default wait. Tests only; the
+// production code never calls it.
+func HoldHashSlotsForTest(wait time.Duration) (release func()) {
+	hashWaitNanos.Store(int64(wait))
+	for i := 0; i < maxConcurrentHashes; i++ {
+		hashSlots <- struct{}{}
+	}
+	return func() {
+		for i := 0; i < maxConcurrentHashes; i++ {
+			<-hashSlots
+		}
+		hashWaitNanos.Store(0)
+	}
+}
 
 // argonParams are tuned for interactive logins (~64 MiB, 1 pass). Adjust upward
 // as hardware allows; parameters are stored in the hash so old hashes verify.
@@ -38,6 +95,10 @@ func HashPassword(password string) (string, error) {
 	if _, err := rand.Read(salt); err != nil {
 		return "", fmt.Errorf("generating salt: %w", err)
 	}
+	if !acquireHashSlot() {
+		return "", ErrBusy
+	}
+	defer releaseHashSlot()
 	key := argon2.IDKey([]byte(password), salt,
 		defaultParams.time, defaultParams.memory, defaultParams.threads, defaultParams.keyLen)
 
@@ -74,6 +135,10 @@ func VerifyPassword(password, encoded string) (bool, error) {
 		return false, ErrInvalidHash
 	}
 
+	if !acquireHashSlot() {
+		return false, ErrBusy
+	}
+	defer releaseHashSlot()
 	got := argon2.IDKey([]byte(password), salt, t, mem, threads, uint32(len(want)))
 	return subtle.ConstantTimeCompare(want, got) == 1, nil
 }
