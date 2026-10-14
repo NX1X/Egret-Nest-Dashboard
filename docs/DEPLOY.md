@@ -41,6 +41,10 @@ For the `tls` profile:
 - set `server_name` in `deploy/nginx/conf.d/egret-nest.conf`,
 - in `.env` set `EGRET_NEST_BEHIND_PROXY=1` and `EGRET_NEST_BASE_URL=https://your.domain`
   (so the app trusts `X-Forwarded-Proto` and issues `Secure` / `__Host-` cookies).
+  It also makes the app take the client address from `X-Real-IP` (which the shipped
+  nginx config sets) for the login rate limiter and the audit log. Set it **only**
+  when a proxy that sets that header is in front: a client that reaches the app
+  directly could otherwise forge its address.
 
 nginx terminates TLS, rate-limits `/ingest` + `/webhook/github`, and caps the body
 at 8 MiB (matching the ingest limit). The **app** owns its security headers (CSP,

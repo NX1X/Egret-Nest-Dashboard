@@ -8,6 +8,32 @@ Notable changes to Egret Nest Dashboard, following
 
 ### Security
 
+- **The login rate limiter did not stop parallel guessing.** It checked the limit
+  before the slow password hash and counted the failure after it. In a test, all
+  20 of 20 parallel wrong-password logins reached the password check and none were
+  limited. Each attempt is now counted atomically before the hash, so at most 5 get
+  through per 15 minutes.
+- **Behind a proxy, anyone could lock out any login, including the only admin.**
+  The limiter keyed on the client address, which behind nginx or an ingress was the
+  proxy's address for everyone. With `EGRET_NEST_BEHIND_PROXY=1` the app now uses
+  `X-Real-IP` (set by the shipped nginx config) or the right-most
+  `X-Forwarded-For` entry, so a lockout only affects the attacker's own address.
+  Audit rows now show the real client address too.
+- **A retention value could delete everything.** Any non-negative number was
+  accepted; a huge one overflowed the date math, and the next janitor pass deleted
+  every run and the whole audit log. Retention is now bounded to 0 to 36,500 days,
+  when saved and when read (a huge value stored earlier or set in the environment
+  is ignored).
+- **Backups no longer turn logins and ingest into errors.** `egret-nest backup`
+  reads the database from a second process. In the old rollback-journal mode, the
+  server's writes then failed at once with `SQLITE_BUSY`. The database now uses WAL
+  mode and a 5-second busy timeout, and foreign keys are set on every connection.
+  Upgrade impact: an existing database switches to WAL on first start and stays in
+  WAL. Keep it on local block storage, not NFS (as DEPLOY.md already advises).
+- **Files the server creates are owner-only.** WAL mode adds `-wal` and `-shm`
+  files that hold real page data; the server now sets a 077 umask at start, so they
+  (and backups) get 0600 like the database.
+
 - **One anonymous request could crash the dashboard.** `POST /ingest` decoded the
   whole body before it checked the token. 8 MiB of empty JSON objects decodes into
   millions of structs (measured at about 770 MiB of heap), so one unauthenticated
