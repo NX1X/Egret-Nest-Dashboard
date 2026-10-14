@@ -98,6 +98,17 @@
       "description": "Base image updates (Dockerfile) pinned by digest, reviewed individually",
       "matchManagers": ["dockerfile"],
       "labels": ["dependencies", "docker"]
+    },
+    {
+      // MUST stay the last rule: later rules override groupName from earlier ones.
+      // The Go toolchain lives in several places (the go.mod go directive, every
+      // setup-go `go-version`, the golang builder image). Without this rule they
+      // landed in DIFFERENT groups, so each PR alone was inconsistent and failed CI,
+      // and one pinned Go 1.27.1, still vulnerable to GO-2026-6617.
+      "description": "Go toolchain: go directive, setup-go go-version and golang images in ONE PR",
+      "matchDepNames": ["go", "golang"],
+      "groupName": "go toolchain",
+      "labels": ["dependencies", "go", "toolchain"]
     }
   ],
 
