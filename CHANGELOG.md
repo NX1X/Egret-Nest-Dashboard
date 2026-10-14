@@ -30,7 +30,9 @@ Notable changes to Egret Nest Dashboard, following
   1.26.9.
 - **`golang.org/x/crypto` v0.56.0**, the fixed version for the three `x/crypto`
   findings in the image. The `distroless/static-debian12` base moves to its current
-  digest, to pick up the `tzdata` update that Trivy reported.
+  digest. That image still ships `tzdata` 2026b (DLA-4792-1, a time-zone data
+  update, severity unknown). It clears when upstream distroless rebuilds and
+  Renovate bumps the digest. This was the only one of 25 image findings left.
 
 ### Fixed
 
