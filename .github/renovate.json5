@@ -100,6 +100,16 @@
       "labels": ["dependencies", "docker"]
     },
     {
+      // The chart's own image takes its tag from .Chart.AppVersion when
+      // image.tag is empty. A digest pin writes "@sha256:..." into image.tag, and
+      // the template then renders "ghcr.io/nx1x/egret-nest:@sha256:...", which is
+      // not a valid image reference. The release bumps appVersion instead.
+      "description": "Helm chart: never pin the chart's own image (tag comes from appVersion)",
+      "matchManagers": ["helm-values"],
+      "matchPackageNames": ["ghcr.io/nx1x/egret-nest"],
+      "enabled": false
+    },
+    {
       // MUST stay the last rule: later rules override groupName from earlier ones.
       // The Go toolchain lives in several places (the go.mod go directive, every
       // setup-go `go-version`, the golang builder image). Without this rule they
@@ -107,6 +117,9 @@
       // and one pinned Go 1.27.1, still vulnerable to GO-2026-6617.
       "description": "Go toolchain: go directive, setup-go go-version and golang images in ONE PR",
       "matchDepNames": ["go", "golang"],
+      // Go 1.27.0 and 1.27.1 are vulnerable (GO-2026-6617, govulncheck fails).
+      // Skip them; the first 1.27 release Renovate may propose is 1.27.2.
+      "allowedVersions": "!/^1\\.27\\.[01]$/",
       "groupName": "go toolchain",
       "labels": ["dependencies", "go", "toolchain"]
     }
