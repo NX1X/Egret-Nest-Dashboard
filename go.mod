@@ -1,6 +1,6 @@
 module github.com/NX1X/Egret-Nest-Dashboard
 
-go 1.26.9
+go 1.27.1
 
 // Dependencies are intentionally minimal (see docs/DEPENDENCIES.md).
 // Run `go mod tidy` (or `make tidy`) to populate the require block + go.sum.
