@@ -218,15 +218,28 @@ func (s *Server) handleSettingsPost(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin/settings", http.StatusSeeOther)
 }
 
-// saveIntSetting stores a non-negative integer setting, or clears it when blank.
+// maxRetentionDays bounds every retention window (100 years). Without a bound, a
+// huge value made time.AddDate overflow and wrap the cutoff to about "now", so
+// the next janitor pass deleted every run and the whole audit log.
+const maxRetentionDays = 36500
+
+// boundedRetention returns n if it is a valid retention window, else ok=false.
+func boundedRetention(n int) (int, bool) {
+	return n, n >= 0 && n <= maxRetentionDays
+}
+
+// saveIntSetting stores a retention setting (0 to maxRetentionDays), or clears
+// it when blank. An out-of-range value is ignored and the setting is unchanged.
 func (s *Server) saveIntSetting(key, raw string) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		_ = s.store.DeleteSetting(key)
 		return
 	}
-	if n, err := strconv.Atoi(raw); err == nil && n >= 0 {
-		_ = s.store.SetSetting(key, strconv.Itoa(n))
+	if n, err := strconv.Atoi(raw); err == nil {
+		if n, ok := boundedRetention(n); ok {
+			_ = s.store.SetSetting(key, strconv.Itoa(n))
+		}
 	}
 }
 
@@ -433,25 +446,36 @@ func capForAudit(s string) string {
 
 // retentionDays returns the run-retention window: the GUI setting when set,
 // otherwise the EGRET_NEST_RETENTION_DAYS env default.
+//
+// Values are bounded on READ as well as on save: a value stored before the bound
+// existed, or set through the environment, must not trigger the overflow either.
+// An out-of-range value falls back to the next source, and finally to 0 (keep).
 func (s *Server) retentionDays() int {
 	if v, _ := s.store.GetSetting(settingRetentionDays); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
-			return n
+		if n, err := strconv.Atoi(v); err == nil {
+			if n, ok := boundedRetention(n); ok {
+				return n
+			}
 		}
 	}
-	return s.cfg.RetentionDays
+	if n, ok := boundedRetention(s.cfg.RetentionDays); ok {
+		return n
+	}
+	return 0
 }
 
 // auditRetentionDays returns the audit-log retention window: the GUI setting, then
 // the dedicated env knob, then the general run-retention window.
 func (s *Server) auditRetentionDays() int {
 	if v, _ := s.store.GetSetting(settingAuditRetention); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
-			return n
+		if n, err := strconv.Atoi(v); err == nil {
+			if n, ok := boundedRetention(n); ok {
+				return n
+			}
 		}
 	}
-	if s.cfg.AuditRetentionDays > 0 {
-		return s.cfg.AuditRetentionDays
+	if n, ok := boundedRetention(s.cfg.AuditRetentionDays); ok && n > 0 {
+		return n
 	}
 	return s.retentionDays()
 }
