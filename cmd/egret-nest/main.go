@@ -57,6 +57,9 @@ import (
 var version = "dev"
 
 func main() {
+	// Owner-only for every file this process creates (the database, its WAL and
+	// shared-memory files, backups), before anything is opened.
+	restrictUmask()
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "version", "-v", "--version":
