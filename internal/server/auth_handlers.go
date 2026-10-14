@@ -161,8 +161,10 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	key := clientIP(r) + "|" + strings.ToLower(login)
-	if s.loginLimiter.blocked(key, now) {
+	key := s.clientIP(r) + "|" + strings.ToLower(login)
+	// Reserve the attempt BEFORE the slow password hash, so parallel requests
+	// cannot all slip past the ceiling while their hashes run.
+	if !s.loginLimiter.reserve(key, now) {
 		s.audit(r, login, "login.blocked", "too many failed attempts")
 		s.renderStatus(w, http.StatusTooManyRequests, "login.html", map[string]any{
 			"Instance": s.instanceName(), "CSRF": s.csrfToken(w, r), "GitHub": s.ghOAuth() != nil,
@@ -170,10 +172,15 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// fail records the failed attempt against the limiter, then shows a generic error.
+	// fail shows the generic error. The attempt was already counted by reserve.
 	fail := func() {
-		s.loginLimiter.fail(key, now)
 		s.renderLoginError(w, r, "invalid credentials")
+	}
+	// busy answers a login whose password could not be checked at all (every
+	// hashing slot busy): give the reserved attempt back, so it is not a strike.
+	busy := func() {
+		s.loginLimiter.release(key)
+		s.renderLoginBusy(w, r)
 	}
 
 	user, err := s.store.GetUserByLogin(login)
@@ -190,7 +197,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		// time as a real password check - otherwise a fast "no such user" response
 		// leaks which logins exist. The match result is intentionally discarded.
 		if _, err := auth.VerifyPassword(password, dummyPasswordHash); errors.Is(err, auth.ErrBusy) {
-			s.renderLoginBusy(w, r)
+			busy()
 			return
 		}
 		s.audit(r, login, "login.failed", "unknown user or non-local account")
@@ -199,7 +206,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	ok, err := auth.VerifyPassword(password, user.PasswordHash)
 	if errors.Is(err, auth.ErrBusy) {
-		s.renderLoginBusy(w, r)
+		busy()
 		return
 	}
 	if err != nil || !ok {
@@ -284,10 +291,31 @@ func (s *Server) renderLoginError(w http.ResponseWriter, r *http.Request, msg st
 
 // audit records a security event; best-effort.
 func (s *Server) audit(r *http.Request, actor, action, detail string) {
-	_ = s.store.Audit(model.AuditEvent{ActorLogin: actor, Action: action, Detail: detail, IP: clientIP(r)})
+	_ = s.store.Audit(model.AuditEvent{ActorLogin: actor, Action: action, Detail: detail, IP: s.clientIP(r)})
 }
 
-func clientIP(r *http.Request) string {
+// clientIP returns the client address used for rate-limit keys and audit rows.
+//
+// Behind a trusted proxy (EGRET_NEST_BEHIND_PROXY=1), RemoteAddr is the PROXY's
+// address on every request. Keying the login limiter on it let anyone lock out
+// any login (the only admin included) for everybody, and every audit row showed
+// the proxy. So behind a proxy, use X-Real-IP, which the shipped nginx config
+// SETS from $remote_addr (overwriting any client-supplied value), or else the
+// right-most X-Forwarded-For entry, which the proxy itself appended. Never the
+// left-most entry: the client controls it. Without BehindProxy these headers are
+// ignored, because a direct client could forge them.
+func (s *Server) clientIP(r *http.Request) string {
+	if s.cfg.BehindProxy {
+		if ip := net.ParseIP(strings.TrimSpace(r.Header.Get("X-Real-IP"))); ip != nil {
+			return ip.String()
+		}
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			parts := strings.Split(xff, ",")
+			if ip := net.ParseIP(strings.TrimSpace(parts[len(parts)-1])); ip != nil {
+				return ip.String()
+			}
+		}
+	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr

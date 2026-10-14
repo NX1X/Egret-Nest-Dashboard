@@ -54,10 +54,33 @@ func (s *Store) decTOTP(userID int64, stored string) (string, error) {
 	return s.enc.Decrypt(stored, totpAAD(userID))
 }
 
+// sqlitePragmas are set through the DSN, so they apply to EVERY connection the
+// pool opens, not just the first one (a PRAGMA run once with db.Exec is lost if
+// the pool ever reopens its connection):
+//   - busy_timeout: wait up to 5s for a lock instead of failing at once with
+//     SQLITE_BUSY. The `egret-nest backup` command is a second process.
+//   - journal_mode(WAL): readers (such as backup's VACUUM INTO) no longer block
+//     the server's writes. In the old rollback-journal mode, logins and ingest
+//     returned 500 for as long as a backup ran.
+//   - foreign_keys(1): SQLite disables FK enforcement by default (modernc too),
+//     so ON DELETE CASCADE would silently be a no-op without it.
+//
+// WAL needs the database on local block storage, not NFS (see DEPLOY.md). Its
+// -wal and -shm files hold real page data; the server sets a 077 umask at start
+// (cmd/egret-nest) so they are created owner-only, like the database itself.
+const sqlitePragmas = "_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)"
+
+func dsn(path string) string {
+	if strings.Contains(path, "?") {
+		return path + "&" + sqlitePragmas
+	}
+	return path + "?" + sqlitePragmas
+}
+
 // Open opens (creating if needed) the SQLite database at path and runs
 // migrations. Use ":memory:" for tests that don't need persistence.
 func Open(path string) (*Store, error) {
-	db, err := sql.Open("sqlite", path)
+	db, err := sql.Open("sqlite", dsn(path))
 	if err != nil {
 		return nil, fmt.Errorf("opening sqlite %q: %w", path, err)
 	}
@@ -74,13 +97,6 @@ func Open(path string) (*Store, error) {
 		if err := os.Chmod(path, 0o600); err != nil && !os.IsNotExist(err) {
 			log.Printf("egret-nest: could not restrict permissions on %q: %v", path, err)
 		}
-	}
-	// SQLite disables FK enforcement by default (modernc included), so
-	// ON DELETE CASCADE would be a no-op without this. Safe with the single
-	// connection above.
-	if _, err := db.Exec(`PRAGMA foreign_keys = ON`); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("enabling foreign keys: %w", err)
 	}
 	s := &Store{db: db}
 	if err := s.migrate(); err != nil {

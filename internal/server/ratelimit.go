@@ -50,6 +50,39 @@ func (l *failLimiter) fail(key string, now time.Time) {
 	b.count++
 }
 
+// reserve atomically checks the ceiling AND counts the attempt, before the caller
+// does the slow work (an argon2id hash). Checking first and counting only after
+// the hash let N parallel requests all pass the check while their hashes ran, so
+// an attacker got N guesses per window instead of max. It returns false when key
+// is already at the ceiling. A successful attempt must call reset; an attempt
+// that was never actually checked (hashing busy) should call release.
+func (l *failLimiter) reserve(key string, now time.Time) bool {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if len(l.buckets) > 10000 {
+		l.pruneLocked(now) // bound memory against a flood of distinct keys
+	}
+	b := l.buckets[key]
+	if b == nil || now.After(b.resetAt) {
+		b = &failBucket{resetAt: now.Add(l.window)}
+		l.buckets[key] = b
+	}
+	if b.count >= l.max {
+		return false
+	}
+	b.count++
+	return true
+}
+
+// release gives back one reserved attempt that was never actually checked.
+func (l *failLimiter) release(key string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if b := l.buckets[key]; b != nil && b.count > 0 {
+		b.count--
+	}
+}
+
 // reset clears key's failure record (on successful auth).
 func (l *failLimiter) reset(key string) {
 	l.mu.Lock()

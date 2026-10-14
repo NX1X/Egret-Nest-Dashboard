@@ -89,7 +89,7 @@ func (s *Server) accessLog(next http.Handler) http.Handler {
 		}
 		entry := AccessEntry{
 			Time: start, Method: r.Method, Path: r.URL.Path, Status: sw.status,
-			DurMS: dur.Milliseconds(), IP: clientIP(r), User: user,
+			DurMS: dur.Milliseconds(), IP: s.clientIP(r), User: user,
 		}
 		s.logs.add(entry)
 		who := user

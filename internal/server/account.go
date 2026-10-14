@@ -89,14 +89,14 @@ func (s *Server) handleAccountPost(w http.ResponseWriter, r *http.Request) {
 	verifyCodeThrottled := func(purpose string) (int64, bool) {
 		key := "totp:" + purpose + "|" + strconv.FormatInt(u.ID, 10)
 		now := time.Now()
-		if s.loginLimiter.blocked(key, now) {
+		// Reserve before checking (atomic check-and-count), as on the login page.
+		if !s.loginLimiter.reserve(key, now) {
 			s.audit(r, u.Login, "totp."+purpose+".blocked", "too many attempts")
 			http.Redirect(w, r, "/account?e=throttled", http.StatusSeeOther)
 			return 0, false
 		}
 		counter, ok := auth.VerifyTOTPCounter(u.TOTPSecret, r.PostFormValue("code"), now, 1)
 		if !ok {
-			s.loginLimiter.fail(key, now)
 			http.Redirect(w, r, "/account?e=badcode", http.StatusSeeOther)
 			return 0, false
 		}
