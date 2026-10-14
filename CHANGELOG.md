@@ -4,6 +4,41 @@ Notable changes to Egret Nest Dashboard, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+
+- **One anonymous request could crash the dashboard.** `POST /ingest` decoded the
+  whole body before it checked the token. 8 MiB of empty JSON objects decodes into
+  millions of structs (measured at about 770 MiB of heap), so one unauthenticated
+  request exceeded the 256 MiB container limit and the process was killed. The
+  token is now checked from the headers before the body is read.
+- **A token holder can no longer exhaust memory through ingest either.** A
+  streaming pre-check now rejects an envelope with more than 100,000 array
+  elements, or nested deeper than 32 levels, before any structs are built. 8 MiB of
+  real Egret entries is under about 60,000 elements, so real runs are not affected.
+  A body over 8 MiB now returns `413` instead of a misleading `400`.
+- **Parallel logins could crash the dashboard.** Each argon2id hash allocates
+  64 MiB, and a login runs one even for an unknown user. About 4 parallel anonymous
+  login attempts exceeded the 256 MiB limit. At most 2 hashes now run at once.
+  Other callers wait up to 3 seconds, then get `503` with `Retry-After`. Known and
+  unknown logins get the same busy answer, so it does not reveal which accounts
+  exist, and a busy answer does not count as a failed attempt.
+- **Go 1.26.9 (GO-2026-6617).** Fixes an HTTP/2 server crash caused by a race in
+  the `net/http` HPACK encoder. `govulncheck` reported it as reachable. Every Go
+  standard library CVE that Trivy reported in the image lists a fix at or below
+  1.26.9.
+- **`golang.org/x/crypto` v0.56.0**, the fixed version for the three `x/crypto`
+  findings in the image. The `distroless/static-debian12` base moves to its current
+  digest. That image still ships `tzdata` 2026b (DLA-4792-1, a time-zone data
+  update, severity unknown). It clears when upstream distroless rebuilds and
+  Renovate bumps the digest. This was the only one of 25 image findings left.
+
+### Fixed
+
+- **OpenSSF Scorecard runs again.** `ossf/scorecard-action` v2.4.0 pulls its image
+  from `gcr.io`, and that pull is now refused. v2.5.0 pulls from `ghcr.io`.
+
 ## [0.2.0] - Security hardening (pentest remediation)
 
 ### Changed (upgrade impact)

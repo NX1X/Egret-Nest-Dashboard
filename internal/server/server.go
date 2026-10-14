@@ -8,8 +8,10 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -225,15 +227,43 @@ func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 // handleIngest accepts an Envelope, validates the schema version, stores it, and
 // returns the new run id plus any newly-seen endpoints (drift).
 func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
-	// Bound the body first, then decode (schema-check) before we can evaluate a
-	// repo-scoped token. The MaxBytesReader caps the work an unauthenticated
-	// caller can cause.
-	r.Body = http.MaxBytesReader(w, r.Body, maxIngestBytes)
+	// Authenticate from the headers BEFORE reading the body. Decoding is the
+	// expensive step: an 8 MiB body of empty objects decodes into millions of
+	// structs (measured at about 770 MiB of live heap), which is an OOM kill under
+	// the 256 MiB container limit. An unauthenticated caller must never reach it.
+	// The repo-scope check needs the payload, so it runs after the decode.
+	cred, ok := s.ingestCredential(bearerToken(r))
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxIngestBytes))
+	if err != nil {
+		var tooBig *http.MaxBytesError
+		if errors.As(err, &tooBig) {
+			http.Error(w, "payload too large", http.StatusRequestEntityTooLarge)
+			return
+		}
+		http.Error(w, "reading payload failed", http.StatusBadRequest)
+		return
+	}
+	// The byte cap alone does not bound memory, because tiny elements expand
+	// into large structs. Count array elements with a streaming tokenizer first,
+	// so even an authenticated caller cannot make the decode below explode.
+	if err := checkIngestShape(body); err != nil {
+		code := http.StatusBadRequest
+		if errors.Is(err, errIngestTooLarge) {
+			code = http.StatusRequestEntityTooLarge
+		}
+		http.Error(w, err.Error(), code)
+		return
+	}
 
 	// Lenient decode: unknown fields are allowed so additive contract changes
 	// don't break older dashboards (per the compatibility policy).
 	var env model.Envelope
-	if err := json.NewDecoder(r.Body).Decode(&env); err != nil {
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(&env); err != nil {
 		http.Error(w, "invalid JSON payload", http.StatusBadRequest)
 		return
 	}
@@ -244,13 +274,15 @@ func (s *Server) handleIngest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orgID, ok := s.ingestAuthorized(bearerToken(r), &env)
-	if !ok {
+	if cred.repository != "" && !strings.EqualFold(cred.repository, env.Run.Repository) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
+	if cred.tokenID != 0 {
+		_ = s.store.TouchIngestToken(cred.tokenID)
+	}
 
-	id, newEndpoints, err := s.store.InsertEnvelope(&env, orgID)
+	id, newEndpoints, err := s.store.InsertEnvelope(&env, cred.orgID)
 	if err != nil {
 		log.Printf("egret-nest: storing run: %v", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -365,29 +397,33 @@ func bearerToken(r *http.Request) string {
 	return r.Header.Get("X-Egret-Token")
 }
 
-// ingestAuthorized authorizes an ingest POST. Precedence:
-//  1. a valid, non-revoked scoped token (repo scope, if set, must match);
+// ingestCredential is what an ingest request proved from its headers alone.
+type ingestCredential struct {
+	orgID      int64  // org the run is attributed to; 0 = legacy/open ingest (admins only)
+	tokenID    int64  // scoped token to touch on success; 0 = none
+	repository string // repo scope of a scoped token; "" = any repo
+}
+
+// ingestCredential authenticates an ingest POST from its headers, BEFORE the
+// body is read. Precedence:
+//  1. a valid, non-revoked scoped token;
 //  2. the optional legacy shared token (constant-time);
 //  3. otherwise denied - unless OpenIngest is set AND no shared token is
 //     configured (explicit dev escape hatch only).
 //
-// Returns the org the run should be attributed to and whether the request is
-// authorized. Legacy/open ingest attributes to org 0 (visible only to admins).
-func (s *Server) ingestAuthorized(token string, env *model.Envelope) (orgID int64, ok bool) {
+// A scoped token's repository is checked by the caller against the decoded
+// payload; it cannot be checked here because the body is not read yet.
+func (s *Server) ingestCredential(token string) (ingestCredential, bool) {
 	if token != "" {
 		if it, _ := s.store.GetIngestTokenByHash(auth.HashToken(token)); it != nil {
-			if it.Repository != "" && !strings.EqualFold(it.Repository, env.Run.Repository) {
-				return 0, false
-			}
-			_ = s.store.TouchIngestToken(it.ID)
-			return it.OrgID, true
+			return ingestCredential{orgID: it.OrgID, tokenID: it.ID, repository: it.Repository}, true
 		}
 		if s.cfg.IngestToken != "" && auth.EqualToken(token, s.cfg.IngestToken) {
-			return 0, true
+			return ingestCredential{}, true
 		}
-		return 0, false
+		return ingestCredential{}, false
 	}
-	return 0, s.cfg.OpenIngest && s.cfg.IngestToken == ""
+	return ingestCredential{}, s.cfg.OpenIngest && s.cfg.IngestToken == ""
 }
 
 func (s *Server) render(w http.ResponseWriter, name string, data any) {
