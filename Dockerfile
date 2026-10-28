@@ -2,7 +2,7 @@
 # Builder Go version must satisfy go.mod (go 1.26); bump the two together.
 # Base images are digest-pinned (tag kept in the comment for readability);
 # Renovate (.github/renovate.json5) bumps both the tag comment and the @sha256.
-FROM golang:1.26.9@sha256:d7722066f0b60ceccb6c0643cbed1f5f9e15506ac237146c95333504d7805d89 AS build
+FROM golang:1.27.2@sha256:820153096fda4de6ac1b7194d12e416b7dd8f4e9a33d17e0345b111b945162d8 AS build
 WORKDIR /src
 # No wildcard on go.sum: a missing checksum file must hard-fail, not silently
 # skip the `go mod verify` below.
