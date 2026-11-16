@@ -1,134 +1,165 @@
 {
-  // ═══════════════════════════════════════════════════════════════════════════
-  //  RENOVATE CONFIG - Egret Nest Dashboard (Go modules + GitHub Actions + Docker)
-  //  Renovate reads this from .github/renovate.json5 automatically.
-  //
-  //  SELF-CONTAINED: the dependency policy is inlined here rather than fetched
-  //  from a shared preset repo, so Renovate has no external preset dependency.
-  //
-  //  Posture: MANUAL MERGE - nothing automerges; every update lands as a PR.
-  //  14-day supply-chain cooldown, OSV + OpenSSF alerts, SHA/digest-pinned
-  //  actions + images, dependency dashboard.
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-
-  // Public Renovate presets only - these always resolve.
-  "extends": [
-    "config:best-practices",
-    "security:openssf-scorecard",
-    ":dependencyDashboard",
-    ":semanticCommits"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    'security:openssf-scorecard',
+    ':dependencyDashboard',
+    ':semanticCommits',
   ],
-
-  "timezone": "America/New_York",
-  "schedule": ["before 6am"],
-
-  "minimumReleaseAge": "14 days",
-  "internalChecksFilter": "strict",
-
-  "configMigration": true,
-
-  "labels": ["dependencies"],
-  "assignees": ["NX1X"],
-  "reviewers": ["NX1X"],
-
-  "dependencyDashboard": true,
-  "dependencyDashboardTitle": "Dependency Dashboard",
-  "dependencyDashboardLabels": ["dependencies"],
-  "dependencyDashboardAutoclose": true,
-
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2,
-  // Open the PR as soon as the branch is created. "not-pending" holds the PR
-  // until branch status checks are non-pending, which silently strands updates
-  // on any repo whose CI doesn't run on renovate/* branches. "immediate" opens
-  // the PR (checks run on it, where they're reviewed); the 14-day cooldown is
-  // still enforced by minimumReleaseAge + internalChecksFilter: strict.
-  "prCreation": "immediate",
-  "rangeStrategy": "bump",
-  "separateMultipleMajor": true,
-
-  "vulnerabilityAlerts": {
-    "enabled": true,
-    "minimumReleaseAge": "0 days",
-    "labels": ["dependencies", "security"]
-  },
-  "osvVulnerabilityAlerts": true,
-
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 6am on monday"]
-  },
-
-  "packageRules": [
-    {
-      "description": "GitHub Actions: SHA-pinned, grouped minor/patch/digest into one PR",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch", "digest"],
-      "groupName": "github-actions",
-      "labels": ["dependencies", "github-actions"]
-    },
-    {
-      "description": "GitHub Actions majors: dedicated label, reviewed individually",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["major"],
-      "labels": ["dependencies", "github-actions", "major-update"]
-    },
-    {
-      "description": "Any major update: extra cooldown + clear label so it never slips by",
-      "matchUpdateTypes": ["major"],
-      "minimumReleaseAge": "21 days",
-      "labels": ["dependencies", "major-update"]
-    },
-    {
-      "description": "Go modules: group minor/patch into one review PR; majors stay separate",
-      "matchManagers": ["gomod"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "go modules",
-      "labels": ["dependencies", "go"]
-    },
-    {
-      "description": "Go toolchain / go directive bumps reviewed on their own",
-      "matchManagers": ["gomod"],
-      "matchDepTypes": ["golang"],
-      "labels": ["dependencies", "go", "toolchain"]
-    },
-    {
-      "description": "Base image updates (Dockerfile) pinned by digest, reviewed individually",
-      "matchManagers": ["dockerfile"],
-      "labels": ["dependencies", "docker"]
-    },
-    {
-      // The chart's own image takes its tag from .Chart.AppVersion when
-      // image.tag is empty. A digest pin writes "@sha256:..." into image.tag, and
-      // the template then renders "ghcr.io/nx1x/egret-nest:@sha256:...", which is
-      // not a valid image reference. The release bumps appVersion instead.
-      "description": "Helm chart: never pin the chart's own image (tag comes from appVersion)",
-      "matchManagers": ["helm-values"],
-      "matchPackageNames": ["ghcr.io/nx1x/egret-nest"],
-      "enabled": false
-    },
-    {
-      // MUST stay the last rule: later rules override groupName from earlier ones.
-      // The Go toolchain lives in several places (the go.mod go directive, every
-      // setup-go `go-version`, the golang builder image). Without this rule they
-      // landed in DIFFERENT groups, so each PR alone was inconsistent and failed CI,
-      // and one pinned Go 1.27.1, still vulnerable to GO-2026-6617.
-      "description": "Go toolchain: go directive, setup-go go-version and golang images in ONE PR",
-      "matchDepNames": ["go", "golang"],
-      // Go 1.27.0 to 1.27.2 are vulnerable (GO-2026-6617, GO-2026-6809; govulncheck
-      // fails). Skip them; the first 1.27 release Renovate may propose is 1.27.3.
-      "allowedVersions": "!/^1\\.27\\.[012](-|$)/",
-      "groupName": "go toolchain",
-      "labels": ["dependencies", "go", "toolchain"]
-    }
+  timezone: 'America/New_York',
+  schedule: [
+    'before 6am',
   ],
-
-  "ignorePaths": [
-    "**/vendor/**",
-    "**/bin/**",
-    "**/build/**",
-    "**/dist/**"
-  ]
+  minimumReleaseAge: '14 days',
+  internalChecksFilter: 'strict',
+  configMigration: true,
+  labels: [
+    'dependencies',
+  ],
+  assignees: [
+    'NX1X',
+  ],
+  reviewers: [
+    'NX1X',
+  ],
+  dependencyDashboard: {
+    enabled: true,
+    title: 'Dependency Dashboard',
+    labels: [
+      'dependencies',
+    ],
+    autoclose: true,
+  },
+  prConcurrentLimit: 5,
+  prHourlyLimit: 2,
+  prCreation: 'immediate',
+  rangeStrategy: 'bump',
+  separateMultipleMajor: true,
+  vulnerabilityAlerts: {
+    enabled: true,
+    minimumReleaseAge: '0 days',
+    labels: [
+      'dependencies',
+      'security',
+    ],
+  },
+  osvVulnerabilityAlerts: true,
+  lockFileMaintenance: {
+    enabled: true,
+    schedule: [
+      'before 6am on monday',
+    ],
+  },
+  packageRules: [
+    {
+      description: 'GitHub Actions: SHA-pinned, grouped minor/patch/digest into one PR',
+      matchManagers: [
+        'github-actions',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'digest',
+      ],
+      groupName: 'github-actions',
+      labels: [
+        'dependencies',
+        'github-actions',
+      ],
+    },
+    {
+      description: 'GitHub Actions majors: dedicated label, reviewed individually',
+      matchManagers: [
+        'github-actions',
+      ],
+      matchUpdateTypes: [
+        'major',
+      ],
+      labels: [
+        'dependencies',
+        'github-actions',
+        'major-update',
+      ],
+    },
+    {
+      description: 'Any major update: extra cooldown + clear label so it never slips by',
+      matchUpdateTypes: [
+        'major',
+      ],
+      minimumReleaseAge: '21 days',
+      labels: [
+        'dependencies',
+        'major-update',
+      ],
+    },
+    {
+      description: 'Go modules: group minor/patch into one review PR; majors stay separate',
+      matchManagers: [
+        'gomod',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
+      groupName: 'go modules',
+      labels: [
+        'dependencies',
+        'go',
+      ],
+    },
+    {
+      description: 'Go toolchain / go directive bumps reviewed on their own',
+      matchManagers: [
+        'gomod',
+      ],
+      matchDepTypes: [
+        'golang',
+      ],
+      labels: [
+        'dependencies',
+        'go',
+        'toolchain',
+      ],
+    },
+    {
+      description: 'Base image updates (Dockerfile) pinned by digest, reviewed individually',
+      matchManagers: [
+        'dockerfile',
+      ],
+      labels: [
+        'dependencies',
+        'docker',
+      ],
+    },
+    {
+      description: "Helm chart: never pin the chart's own image (tag comes from appVersion)",
+      matchManagers: [
+        'helm-values',
+      ],
+      matchPackageNames: [
+        'ghcr.io/nx1x/egret-nest',
+      ],
+      enabled: false,
+    },
+    {
+      description: 'Go toolchain: go directive, setup-go go-version and golang images in ONE PR',
+      matchDepNames: [
+        'go',
+        'golang',
+      ],
+      allowedVersions: '!/^1\\.27\\.[012](-|$)/',
+      groupName: 'go toolchain',
+      labels: [
+        'dependencies',
+        'go',
+        'toolchain',
+      ],
+    },
+  ],
+  ignorePaths: [
+    '**/vendor/**',
+    '**/bin/**',
+    '**/build/**',
+    '**/dist/**',
+  ],
 }
